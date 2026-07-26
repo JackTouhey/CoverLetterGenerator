@@ -9,7 +9,7 @@
   },
   "include": [
     "src/**/*.ts"
-  ],
+, "server/claudeInterface.ts"  ],
   "exclude": [
     "src/**/*.spec.ts"
   ]

@@ -1,8 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { submitPrompt } from './submitPrompt';
 import { testRequest } from '../model/request/test_request';
-import { HttpClient, HttpRequest } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -13,19 +12,23 @@ import { HttpClient, HttpRequest } from '@angular/common/http';
 export class App {
   protected readonly title = signal('cover-letter-generator');
   private http = inject(HttpClient);
-  private url = "http://localhost:4201/echo";
-
-  submitPrompt() {
-    submitPrompt();
-  }
+  private echoUrl = "http://localhost:4201/echo";
+  private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
 
   testRequest() {
     const requestBody = new testRequest("A string that should be echoed");
 
     this.http
-        .post<testRequest>(this.url, requestBody, { observe: "body" })
+        .post<testRequest>(this.echoUrl, requestBody, { observe: "body" })
         .subscribe(data => {
           console.log(data.contents)
+        });
+  }
+
+  generateCoverLetter() {
+    this.http.get< { body: object }>(this.coverLetterUrl)
+        .subscribe(data => {
+            console.log(data.body);
         });
   }
 }
