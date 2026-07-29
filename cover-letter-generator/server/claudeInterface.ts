@@ -1,4 +1,4 @@
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import fs from "fs";
 import Anthropic from "@anthropic-ai/sdk";
 import path from 'path';

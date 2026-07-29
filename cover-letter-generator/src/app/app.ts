@@ -14,6 +14,7 @@ export class App {
   private http = inject(HttpClient);
   private echoUrl = "http://localhost:4201/echo";
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
+  private testConnectionUrl = "http://localhost:4201/testConnection";
 
   testRequest() {
     const requestBody = new testRequest("A string that should be echoed");
@@ -27,6 +28,13 @@ export class App {
 
   generateCoverLetter() {
     this.http.get< { body: object }>(this.coverLetterUrl)
+        .subscribe(data => {
+            console.log(data.body);
+        });
+  }
+
+  testConnection() {
+    this.http.get< { body: object }>(this.testConnectionUrl)
         .subscribe(data => {
             console.log(data.body);
         });
