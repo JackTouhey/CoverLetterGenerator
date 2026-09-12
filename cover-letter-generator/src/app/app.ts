@@ -39,4 +39,8 @@ export class App {
             console.log(data.body);
         });
   }
+
+  uploadFile() {
+    
+  }
 }
