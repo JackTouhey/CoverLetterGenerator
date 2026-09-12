@@ -40,7 +40,15 @@ export class App {
         });
   }
 
-  uploadFile() {
-    
+  uploadFile(event: Event) {
+    console.log("UploadFile hit");
+    const uploadElement = event.target as HTMLInputElement;
+    let fileList: FileList | null = uploadElement.files;
+
+    if(fileList) {
+      for(const f of fileList) {
+        console.log(f);
+      }
+    }
   }
 }

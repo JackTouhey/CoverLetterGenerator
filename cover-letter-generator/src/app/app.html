@@ -4,7 +4,9 @@
 
 <main class="main">
   <!-- <button (click)="generateCoverLetter()">Generate Cover Letter</button> -->
-   <button (click)="testConnection()">Test DB connection</button>
+   <button (click)="testConnection()">Test DB connection</button><br/>
+   
+   <input type="file" class="file-upload" (change)="uploadFile($event)">
 </main>
 
 <router-outlet />
