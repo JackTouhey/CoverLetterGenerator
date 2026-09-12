@@ -1,8 +1,10 @@
 import express from 'express';
 import { generateCoverLetter } from './claudeInterface';
 import { testConnection } from './testConnection';
+import multer from 'multer';
 
 export const routes = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
  
 routes.post('/echo', (req, res) => {
     // console.log(req.body.contents); 
@@ -27,4 +29,9 @@ routes.get('/testConnection', async (req, res) => {
     } catch (error) {
         res.send( {body: "Connection Interrupted: " + (error as Error).message});
     }
+});
+
+routes.post('/uploadFile', upload.single('file'), async (req, res) => {
+    console.log(req.file);
+    res.status(200).json({ message: 'File received' });
 });

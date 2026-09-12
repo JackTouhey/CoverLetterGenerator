@@ -15,6 +15,7 @@ export class App {
   private echoUrl = "http://localhost:4201/echo";
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private testConnectionUrl = "http://localhost:4201/testConnection";
+  private uploadFileUrl = "http://localhost:4201/uploadFile";
 
   testRequest() {
     const requestBody = new testRequest("A string that should be echoed");
@@ -45,10 +46,15 @@ export class App {
     const uploadElement = event.target as HTMLInputElement;
     let fileList: FileList | null = uploadElement.files;
 
-    if(fileList) {
-      for(const f of fileList) {
-        console.log(f);
-      }
-    }
+    if (!fileList || fileList.length === 0) return;
+
+    const file = fileList[0];
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    this.http.post(this.uploadFileUrl, formData)
+      .subscribe(data => {
+        console.log(data);
+      });
   }
 }
