@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import fs from "fs";
-import Anthropic from "@anthropic-ai/sdk";
+import {Anthropic, toFile} from "@anthropic-ai/sdk";
 import path from 'path';
+import multer from 'multer';
 
 dotenv.config( { path: path.join(__dirname, "config.env") } );
 
@@ -108,4 +109,13 @@ async function getPrompt(): Promise<string> {
         console.error(`Failed to read prompt file at "${promptPath}":`, error);
         return terminateMessage;
     }
+}
+
+export async function uploadFile(input: Express.Multer.File): Promise<string> {
+    const uploadedFile = await client.beta.files.upload({
+        file: await toFile(input.buffer, input.originalname, {
+            type: input.mimetype,
+        }),
+    });
+    return uploadedFile.id !== undefined ? uploadedFile.id : "id was not string :("; 
 }

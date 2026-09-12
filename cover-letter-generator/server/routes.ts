@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateCoverLetter } from './claudeInterface';
+import { generateCoverLetter, uploadFile } from './claudeInterface';
 import { testConnection } from './testConnection';
 import multer from 'multer';
 
@@ -32,6 +32,10 @@ routes.get('/testConnection', async (req, res) => {
 });
 
 routes.post('/uploadFile', upload.single('file'), async (req, res) => {
-    console.log(req.file);
-    res.status(200).json({ message: 'File received' });
+    if (req.file) {
+        const response = await uploadFile(req.file);
+        res.status(200).json({ message: response });
+    } else {
+        res.status(200).json({ message: 'Not a file stinky' });
+    }
 });
