@@ -1,10 +1,11 @@
 import express from 'express';
 import { generateCoverLetter, uploadFile } from './claudeInterface';
 import { testConnection } from './testConnection';
+import { getCoverLetters, insertFileId } from './databaseInterface';
 import multer from 'multer';
 
 export const routes = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const multerUpload = multer({ storage: multer.memoryStorage() });
  
 routes.post('/echo', (req, res) => {
     // console.log(req.body.contents); 
@@ -19,6 +20,14 @@ routes.get('/generateCoverLetter', async (req, res) => {
     res.send( {body: result});
 });
 
+routes.get('/getCoverLetters', async (req, res) => {
+    console.log("getting Cover Letter"); 
+
+    const result = await getCoverLetters();
+
+    res.send( {body: result} );
+});
+
 routes.get('/testConnection', async (req, res) => {
     try {
         console.log("http://localhost:4201/testConnection hit"); 
@@ -31,9 +40,11 @@ routes.get('/testConnection', async (req, res) => {
     }
 });
 
-routes.post('/uploadFile', upload.single('file'), async (req, res) => {
+routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
     if (req.file) {
+        console.log('file name ', req.file.originalname);
         const response = await uploadFile(req.file);
+        await insertFileId(response, req.file.originalname);
         res.status(200).json({ message: response });
     } else {
         res.status(200).json({ message: 'Not a file stinky' });

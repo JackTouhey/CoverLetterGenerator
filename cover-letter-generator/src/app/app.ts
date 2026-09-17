@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { testRequest } from '../model/request/test_request';
 import { HttpClient } from '@angular/common/http';
+import { CoverLetter } from '../model/coverLetter';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,15 @@ export class App {
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private testConnectionUrl = "http://localhost:4201/testConnection";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
+  private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";
+  public files: CoverLetter[] = [];
+
+  ngOnInit(): void {
+    this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
+        .subscribe(data => {
+            this.files = data.body;
+        });
+  }
 
   testRequest() {
     const requestBody = new testRequest("A string that should be echoed");

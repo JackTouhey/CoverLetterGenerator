@@ -7,6 +7,15 @@
    <button (click)="testConnection()">Test DB connection</button><br/>
    
    <input type="file" class="file-upload" (change)="uploadFile($event)">
+
+   <br/>
+
+   <ul>
+      @for (file of files; track file.id) {
+        <li>{{file.id}}. {{file.name}} </li>
+      }
+   </ul>
+   
 </main>
 
 <router-outlet />
