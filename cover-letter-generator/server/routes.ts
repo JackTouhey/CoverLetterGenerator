@@ -11,8 +11,7 @@ routes.post('/generateCoverLetter', async (req, res) => {
 
     const fileIds: string[] = req.body.files;
     console.log(fileIds);
-    // const result = await generateCoverLetter();
-    const result = fileIds;
+    const result = await generateCoverLetter(fileIds);
 
     res.status(200).json({ message: result });
 });
