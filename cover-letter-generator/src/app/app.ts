@@ -38,7 +38,7 @@ export class App {
     if (this.selectedFiles.includes(fileId)) {
       this.selectedFiles.splice(this.selectedFiles.indexOf(fileId), 1);
     } else {
-      if (this.selectedFiles.length > 16) {
+      if (this.selectedFiles.length < 16) {
         this.selectedFiles.push(fileId);
       }
     }
