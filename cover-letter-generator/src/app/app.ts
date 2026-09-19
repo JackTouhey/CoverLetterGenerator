@@ -19,12 +19,26 @@ export class App {
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";
   public files: CoverLetter[] = [];
+  public selectedFiles: number[] = [];
 
   ngOnInit(): void {
+    this.getCoverLetters();
+  }
+
+  getCoverLetters() {
     this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
         .subscribe(data => {
             this.files = data.body;
         });
+    this.files.sort((a, b) => a.id - b.id);
+  }
+
+  selectCoverLetter(fileId: number) {
+    if (this.selectedFiles.includes(fileId)) {
+      this.selectedFiles.splice(this.selectedFiles.indexOf(fileId), 1);
+    } else {
+      this.selectedFiles.push(fileId);
+    }
   }
 
   testRequest() {
@@ -65,6 +79,8 @@ export class App {
     this.http.post(this.uploadFileUrl, formData)
       .subscribe(data => {
         console.log(data);
+        this.getCoverLetters();
       });
+    
   }
 }

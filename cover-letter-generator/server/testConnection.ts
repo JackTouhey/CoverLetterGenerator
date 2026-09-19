@@ -9,7 +9,5 @@ export async function testConnection() {
     console.log('Server Time:', result.rows[0].now);
   } catch (error) {
     console.error('Connection failed:', (error as Error).message);
-  } finally {
-    await pool.end();
-  }
+  } 
 }
