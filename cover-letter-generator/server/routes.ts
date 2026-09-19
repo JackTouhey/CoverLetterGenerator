@@ -7,16 +7,18 @@ import multer from 'multer';
 export const routes = express.Router();
 const multerUpload = multer({ storage: multer.memoryStorage() });
 
-routes.get('/generateCoverLetter', async (req, res) => {
-    console.log("Submitting Cover Letter"); 
+routes.post('/generateCoverLetter', async (req, res) => {
 
-    const result = await generateCoverLetter();
+    const fileIds: string[] = req.body.files;
+    console.log(fileIds);
+    // const result = await generateCoverLetter();
+    const result = fileIds;
 
-    res.send( {body: result});
+    res.status(200).json({ message: result });
 });
 
 routes.get('/getCoverLetters', async (req, res) => {
-    console.log("getting Cover Letter"); 
+    console.log("getting Cover Letters"); 
 
     const result = await getCoverLetters();
 

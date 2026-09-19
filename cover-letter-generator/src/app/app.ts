@@ -16,12 +16,14 @@ export class App {
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private testConnectionUrl = "http://localhost:4201/testConnection";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
-  private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  public selectedFiles: number[] = [];
+  private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
+  public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
 
 
-  ngOnInit(): void {
-    this.getCoverLetters();
+  async ngOnInit() {
+    await this.getCoverLetters();
+    console.log(this.files);
   }
 
   getCoverLetters() {
@@ -41,9 +43,21 @@ export class App {
   }
 
   generateCoverLetter() {
-    this.http.get< { body: object }>(this.coverLetterUrl)
+    let fileIds: string[] = [];
+
+    console.log(this.selectedFiles);
+
+    for (const id of this.selectedFiles) {
+      for (const file of this.files) {
+        if (file.id === id) {
+          fileIds.push(file.fileId);
+        }
+      }
+    }
+
+    this.http.post<{ message: unknown }>(this.coverLetterUrl, { files: fileIds })
         .subscribe(data => {
-            console.log(data.body);
+            console.log(data.message);
         });
   }
 

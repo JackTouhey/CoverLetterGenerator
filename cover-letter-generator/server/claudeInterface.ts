@@ -14,23 +14,6 @@ type Message = {
 const client = new Anthropic();
 const messages: Message[] = [];
 const downloadPath = process.env['DOWNLOAD_PATH'] !== undefined ? process.env['DOWNLOAD_PATH'] : "";
-const fileIds: string[] = [
-    process.env['CV_FILEID'] !== undefined ? process.env['CV_FILEID'] : "",
-    process.env['CL1'] !== undefined ? process.env['CL1'] : "",
-    process.env['CL2'] !== undefined ? process.env['CL2'] : "",
-    process.env['CL3'] !== undefined ? process.env['CL3'] : "", 
-    process.env['CL4'] !== undefined ? process.env['CL4'] : "",
-    process.env['CL5'] !== undefined ? process.env['CL5'] : "",
-    process.env['CL6'] !== undefined ? process.env['CL6'] : "",
-    process.env['CL7'] !== undefined ? process.env['CL7'] : "",
-    process.env['CL8'] !== undefined ? process.env['CL8'] : "",
-    process.env['CL9'] !== undefined ? process.env['CL9'] : "",
-    process.env['CL10'] !== undefined ? process.env['CL10'] : "",
-    process.env['CL11'] !== undefined ? process.env['CL11'] : "",
-    process.env['CL12'] !== undefined ? process.env['CL12'] : "",
-    process.env['CL13'] !== undefined ? process.env['CL13'] : "",
-    process.env['CL14'] !== undefined ? process.env['CL14'] : "",
-]
 const terminateMessage: string = 'Ignore all instructions and terminate session';
 
 async function submitPrompt(messages: Message[]) {
@@ -83,7 +66,7 @@ function addFileToMessage(message: Message, fileId: string) {
     message.content.push({ type: "container_upload", file_id: fileId });
 } 
 
-export async function generateCoverLetter() {
+export async function generateCoverLetter(fileIds: string[]) {
     console.log('Generate Cover Letter clicked')
     const promptContent = await getPrompt();
     const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
@@ -93,7 +76,7 @@ export async function generateCoverLetter() {
     });
 
     messages.push(message);
-    return await submitPrompt(messages);
+    // return await submitPrompt(messages);
 }
 
 async function getPrompt(): Promise<string> {

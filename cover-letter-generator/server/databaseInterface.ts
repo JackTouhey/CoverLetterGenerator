@@ -19,7 +19,7 @@ export async function insertFileId(aFileId: String, aFileName: String) {
 export async function getCoverLetters(): Promise<CoverLetter[]> {
     const query = {
         name: 'getCoverLetters',
-        text: 'SELECT id, file_id as fileId, file_name as name FROM file_ids',
+        text: 'SELECT id, file_id as "fileId", file_name as name FROM file_ids',
     };
 
     try {
