@@ -63,13 +63,6 @@ export class App {
         });
   }
 
-  testConnection() {
-    this.http.get< { body: object }>(this.testConnectionUrl)
-        .subscribe(data => {
-            console.log(data.body);
-        });
-  }
-
   uploadFile(event: Event) {
     console.log("UploadFile hit");
     const uploadElement = event.target as HTMLInputElement;

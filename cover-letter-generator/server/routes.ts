@@ -1,6 +1,5 @@
 import express from 'express';
 import { generateCoverLetter, uploadFile } from './claudeInterface';
-import { testConnection } from './testConnection';
 import { getCoverLetters, insertFileId } from './databaseInterface';
 import multer from 'multer';
 
@@ -22,18 +21,6 @@ routes.get('/getCoverLetters', async (req, res) => {
     const result = await getCoverLetters();
 
     res.send( {body: result} );
-});
-
-routes.get('/testConnection', async (req, res) => {
-    try {
-        console.log("http://localhost:4201/testConnection hit"); 
-
-        await testConnection();
-
-        res.send( {body: "Connection Successful"});
-    } catch (error) {
-        res.send( {body: "Connection Interrupted: " + (error as Error).message});
-    }
 });
 
 routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
