@@ -6,11 +6,6 @@ import multer from 'multer';
 
 export const routes = express.Router();
 const multerUpload = multer({ storage: multer.memoryStorage() });
- 
-routes.post('/echo', (req, res) => {
-    // console.log(req.body.contents); 
-    res.send({ contents: req.body.contents });
-});
 
 routes.get('/generateCoverLetter', async (req, res) => {
     console.log("Submitting Cover Letter"); 
