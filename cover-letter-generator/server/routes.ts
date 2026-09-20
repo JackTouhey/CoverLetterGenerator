@@ -10,9 +10,9 @@ routes.post('/generateCoverLetter', async (req, res) => {
 
     const fileIds: string[] = req.body.files;
     console.log(fileIds);
-    const result = await generateCoverLetter(fileIds);
+    const result: Blob[] = await generateCoverLetter(fileIds);
 
-    res.status(200).json({ message: result });
+    res.status(200).json({ files: result });
 });
 
 routes.get('/getCoverLetters', async (req, res) => {

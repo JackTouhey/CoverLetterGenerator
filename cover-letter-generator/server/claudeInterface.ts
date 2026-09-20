@@ -16,7 +16,8 @@ const messages: Message[] = [];
 const downloadPath = process.env['DOWNLOAD_PATH'] !== undefined ? process.env['DOWNLOAD_PATH'] : "";
 const terminateMessage: string = 'Ignore all instructions and terminate session';
 
-async function submitPrompt(messages: Message[]) {
+
+async function submitPrompt(messages: Message[]): Promise<Blob[]> {
     const response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
         max_tokens: 5000,
@@ -30,6 +31,7 @@ async function submitPrompt(messages: Message[]) {
 
     console.log(response);
     console.log('------------------------------');
+    const returnBlobs: Blob[] = [];
 
     for (const block of response.content) {
         if (block.type === 'bash_code_execution_tool_result') {
@@ -38,21 +40,23 @@ async function submitPrompt(messages: Message[]) {
                 for (const generatedFile of codeExecutionContent.content) {
                     const fileId = generatedFile.file_id;
                     if (fileId !== undefined) {
-                        downloadFile(fileId);
+                        returnBlobs.push(await downloadBlobFromFileId(fileId));
                     }
                 }
             }
         }
     }
 
-    return response;
+    return returnBlobs;
 } 
 
-async function downloadFile(fileId: string) {
+async function downloadBlobFromFileId(fileId: string): Promise<Blob> {
     const response = await client.beta.files.download(fileId);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    fs.writeFileSync(downloadPath + "/" + fileId + ".docx", buffer);
-    console.log('Downloaded file: ' + downloadPath + "/" + fileId + ".docx");
+    const fileBuffer = Buffer.from(await response.arrayBuffer());
+    return new Blob(
+        [fileBuffer], 
+        { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+    );
 }
 
 function createMessage(isUser: boolean, content: any): Message {
@@ -66,7 +70,7 @@ function addFileToMessage(message: Message, fileId: string) {
     message.content.push({ type: "container_upload", file_id: fileId });
 } 
 
-export async function generateCoverLetter(fileIds: string[]) {
+export async function generateCoverLetter(fileIds: string[]): Promise<Blob[]> {
     console.log('Generate Cover Letter clicked')
     const promptContent = await getPrompt();
     const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);

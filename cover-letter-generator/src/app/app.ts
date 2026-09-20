@@ -47,8 +47,6 @@ export class App {
   generateCoverLetter() {
     let fileIds: string[] = [];
 
-    console.log(this.selectedFiles);
-
     for (const id of this.selectedFiles) {
       for (const file of this.files) {
         if (file.id === id) {
@@ -57,10 +55,16 @@ export class App {
       }
     }
 
-    this.http.post<{ message: unknown }>(this.coverLetterUrl, { files: fileIds })
-        .subscribe(data => {
-            console.log(data.message);
+    this.http.post<{ files: Blob[] }>(this.coverLetterUrl, { files: fileIds })
+        .subscribe(response => {
+            response.files.forEach((fileBlob: Blob) => {
+              this.downloadFile(fileBlob);
+            });
         });
+  }
+
+  downloadFile(fileBlob: Blob) {
+
   }
 
   uploadFile(event: Event) {
