@@ -76,7 +76,7 @@ export async function generateCoverLetter(fileIds: string[]) {
     });
 
     messages.push(message);
-    // return await submitPrompt(messages);
+    return await submitPrompt(messages);
 }
 
 async function getPrompt(): Promise<string> {
