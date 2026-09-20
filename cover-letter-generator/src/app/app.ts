@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { testRequest } from '../model/request/test_request';
 import { HttpClient } from '@angular/common/http';
 import { CoverLetter } from '../model/coverLetter';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +14,9 @@ export class App {
   protected readonly title = signal('cover-letter-generator');
   private http = inject(HttpClient);
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
-  private testConnectionUrl = "http://localhost:4201/testConnection";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
+  private fileCount: number = 1;
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
 
@@ -55,16 +55,20 @@ export class App {
       }
     }
 
-    this.http.post<{ files: Blob[] }>(this.coverLetterUrl, { files: fileIds })
+    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds })
         .subscribe(response => {
-            response.files.forEach((fileBlob: Blob) => {
-              this.downloadFile(fileBlob);
-            });
+            response.files.forEach(b64 => {
+              const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+              this.downloadFile(new Blob([bytes], {
+                  type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+              }));
+          });
         });
   }
 
   downloadFile(fileBlob: Blob) {
-
+    saveAs(fileBlob, 'file' + this.fileCount + '.docx');
+    this.fileCount++;
   }
 
   uploadFile(event: Event) {

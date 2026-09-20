@@ -10,9 +10,12 @@ routes.post('/generateCoverLetter', async (req, res) => {
 
     const fileIds: string[] = req.body.files;
     console.log(fileIds);
-    const result: Blob[] = await generateCoverLetter(fileIds);
+    const blobs: Blob[] = await generateCoverLetter(fileIds);
+    const files = await Promise.all(
+        blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
+    );
 
-    res.status(200).json({ files: result });
+    res.status(200).json({ files: files });
 });
 
 routes.get('/getCoverLetters', async (req, res) => {
