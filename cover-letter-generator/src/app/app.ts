@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ChangeDetectorRef } from '@angular/core';
 import { CoverLetter } from '../model/coverLetter';
 import { saveAs } from 'file-saver';
 
@@ -23,6 +24,7 @@ export class App {
   public selectedCv: number = -1;
 
   private isUploadedFileCv = false;
+  private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit() {
     await this.getCoverLetters();
@@ -33,6 +35,8 @@ export class App {
   }
 
   getCoverLetters() {
+    this.cvs = [];
+    this.files = [];
     this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
         .subscribe(data => {
           for (const file of data.body) {
@@ -44,6 +48,7 @@ export class App {
           }
           this.files.sort((a, b) => a.id - b.id);
           this.cvs.sort((a, b) => a.id - b.id);
+          this.cdr.detectChanges();
         });
   }
 
@@ -110,6 +115,7 @@ export class App {
     const file = fileList[0];
     const formData = new FormData();
     formData.append('file', file, file.name);
+    formData.append('isCv', String(this.isUploadedFileCv));
 
     this.http.post(this.uploadFileUrl, formData)
       .subscribe(data => {

@@ -1,11 +1,11 @@
 import pool from './utils/connectionPool';
 import { CoverLetter } from '../src/model/coverLetter';
 
-export async function insertFileId(aFileId: String, aFileName: String) {
+export async function insertFileId(aFileId: String, aFileName: String, isCv: boolean) {
     const query = {
         name: 'insertFile',
-        text: 'INSERT INTO file_ids (file_id, file_name) VALUES ($1, $2)',
-        values: [aFileId, aFileName]
+        text: 'INSERT INTO file_ids (file_id, file_name, is_cv) VALUES ($1, $2, $3)',
+        values: [aFileId, aFileName, isCv]
     };
 
     try {

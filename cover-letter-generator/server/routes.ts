@@ -30,7 +30,8 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
     if (req.file) {
         console.log('file name ', req.file.originalname);
         const response = await uploadFile(req.file);
-        await insertFileId(response, req.file.originalname);
+        const isCv = req.body.isCv === 'true';
+        await insertFileId(response, req.file.originalname, isCv);
         res.status(200).json({ message: response });
     } else {
         res.status(200).json({ message: 'Not a file stinky' });
