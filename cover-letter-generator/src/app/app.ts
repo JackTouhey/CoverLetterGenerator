@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { testRequest } from '../model/request/test_request';
 import { HttpClient } from '@angular/common/http';
+import { ChangeDetectorRef } from '@angular/core';
 import { CoverLetter } from '../model/coverLetter';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-root',
@@ -14,24 +15,41 @@ export class App {
   protected readonly title = signal('cover-letter-generator');
   private http = inject(HttpClient);
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
-  private testConnectionUrl = "http://localhost:4201/testConnection";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
+  private fileCount: number = 1;
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
+  public cvs: CoverLetter[] = [];
+  public selectedCv: number = -1;
 
+  private isUploadedFileCv = false;
+  private cdr = inject(ChangeDetectorRef);
 
   async ngOnInit() {
     await this.getCoverLetters();
-    console.log(this.files);
+  }
+
+  toggleIsCv() {
+    this.isUploadedFileCv = this.isUploadedFileCv === false ? true : false;
   }
 
   getCoverLetters() {
+    this.cvs = [];
+    this.files = [];
     this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
         .subscribe(data => {
-            this.files = data.body;
+          for (const file of data.body) {
+            if (file.isCv) {
+              this.cvs.push(file);
+            } else {
+              this.files.push(file);
+            }
+          }
+          this.files.sort((a, b) => a.id - b.id);
+          this.cvs.sort((a, b) => a.id - b.id);
+          this.cdr.detectChanges();
         });
-    this.files.sort((a, b) => a.id - b.id);
   }
 
   selectCoverLetter(fileId: number) {
@@ -44,11 +62,20 @@ export class App {
     }
   }
 
+  selectCv(fileId: number) {
+    if (this.selectedCv === fileId) {
+      this.selectedCv = -1;
+    } else {
+      this.selectedCv = fileId;
+    }
+  }
+
   generateCoverLetter() {
     let fileIds: string[] = [];
+    if (this.selectedCv !== -1) {
+    }
 
-    console.log(this.selectedFiles);
-
+    // Should be refactored to prevent nested loops
     for (const id of this.selectedFiles) {
       for (const file of this.files) {
         if (file.id === id) {
@@ -56,11 +83,26 @@ export class App {
         }
       }
     }
+    for (const file of this.cvs) {
+      if (file.id === this.selectedCv) {
+        fileIds.push(file.fileId);
+      }
+    }
 
-    this.http.post<{ message: unknown }>(this.coverLetterUrl, { files: fileIds })
-        .subscribe(data => {
-            console.log(data.message);
+    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds })
+        .subscribe(response => {
+            response.files.forEach(b64 => {
+              const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+              this.downloadFile(new Blob([bytes], {
+                  type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+              }));
+          });
         });
+  }
+
+  downloadFile(fileBlob: Blob) {
+    saveAs(fileBlob, 'file' + this.fileCount + '.docx');
+    this.fileCount++;
   }
 
   uploadFile(event: Event) {
@@ -73,6 +115,7 @@ export class App {
     const file = fileList[0];
     const formData = new FormData();
     formData.append('file', file, file.name);
+    formData.append('isCv', String(this.isUploadedFileCv));
 
     this.http.post(this.uploadFileUrl, formData)
       .subscribe(data => {

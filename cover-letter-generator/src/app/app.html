@@ -5,28 +5,54 @@
 <main class="main">
   <div class="col-12 d-flex flex-row justify-content-center">
     <div class="d-flex flex-column col-11 justify-content-center border border-secondary-subtle">
-      <div class="col-10 d-flex flex-row justify-content-center mx-auto">
-        <label for="upload" class="me-1">Upload Files: </label>
-        <input id="upload" type="file" class="file-upload border border-black rounded" (change)="uploadFile($event)">
+      <div class="d-flex flex-row col-12 justify-content-evenly">
+        <div class="col-6 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
+          <label for="cvSwitch" class="me-2">Is file CV:</label>
+          <input id="cvSwitch" type="checkbox" class="form-check-input m-0" role="switch" (change)="toggleIsCv()">
+        </div>
+        <div class="col-6 d-flex flex-row justify-content-center mx-auto">
+          <label for="upload" class="me-1">Upload Files: </label>
+          <input id="upload" type="file" class="file-upload border border-black rounded" (change)="uploadFile($event)">
+        </div>
       </div>
       
-
       <br/>
 
-      <ul>
-          @for (file of files; track file.id) {
-            <li class="col-3 d-flex justify-content-start border border-black rounded mt-2" (click)="selectCoverLetter(file.id)">
-                @if (selectedFiles.includes(file.id)) {
-                  <i class="fa-solid fa-circle my-auto"></i>
-                } @else {
-                  <i class="fa-regular fa-circle my-auto"></i>
-                }
-                <div class="d-flex justify-content-between">
-                  {{file.id}}. {{file.name}}
-                </div>
-            </li>
-          }
-      </ul>
+      <div class="col-12 d-flex flex-row justify-content-between">
+        <div class="col-5 d-flex flex-column">
+          <ul>
+            @for (file of files; track file.id) {
+              <li class="col-12 d-flex justify-content-start border border-black rounded mt-2" (click)="selectCoverLetter(file.id)">
+                  @if (selectedFiles.includes(file.id)) {
+                    <i class="fa-solid fa-circle my-auto"></i>
+                  } @else {
+                    <i class="fa-regular fa-circle my-auto"></i>
+                  }
+                  <div class="d-flex justify-content-between">
+                    {{file.id}}. {{file.name}}
+                  </div>
+              </li>
+            }
+          </ul>
+        </div>
+        <div class="col-5 me-3">
+          <ul>
+            @for (file of cvs; track file.id) {
+              <li class="col-12 d-flex justify-content-start border border-black rounded mt-2" (click)="selectCv(file.id)">
+                  @if (selectedCv === file.id) {
+                    <i class="fa-solid fa-circle my-auto"></i>
+                  } @else {
+                    <i class="fa-regular fa-circle my-auto"></i>
+                  }
+                  <div class="d-flex justify-content-between">
+                    {{file.id}}. {{file.name}}
+                  </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      
       
       <br/>
       

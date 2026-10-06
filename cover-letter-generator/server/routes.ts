@@ -1,6 +1,6 @@
 import express from 'express';
-import { generateCoverLetter, uploadFile } from './claudeInterface';
-import { getCoverLetters, insertFileId } from './databaseInterface';
+import { generateCoverLetter, uploadFile } from './claudeController';
+import { getCoverLetters, insertFileId } from './databaseController';
 import multer from 'multer';
 
 export const routes = express.Router();
@@ -10,9 +10,12 @@ routes.post('/generateCoverLetter', async (req, res) => {
 
     const fileIds: string[] = req.body.files;
     console.log(fileIds);
-    const result = await generateCoverLetter(fileIds);
+    const blobs: Blob[] = await generateCoverLetter(fileIds);
+    const files = await Promise.all(
+        blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
+    );
 
-    res.status(200).json({ message: result });
+    res.status(200).json({ files: files });
 });
 
 routes.get('/getCoverLetters', async (req, res) => {
@@ -27,7 +30,8 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
     if (req.file) {
         console.log('file name ', req.file.originalname);
         const response = await uploadFile(req.file);
-        await insertFileId(response, req.file.originalname);
+        const isCv = req.body.isCv === 'true';
+        await insertFileId(response, req.file.originalname, isCv);
         res.status(200).json({ message: response });
     } else {
         res.status(200).json({ message: 'Not a file stinky' });
