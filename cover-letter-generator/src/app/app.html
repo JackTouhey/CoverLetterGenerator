@@ -5,9 +5,15 @@
 <main class="main">
   <div class="col-12 d-flex flex-row justify-content-center">
     <div class="d-flex flex-column col-11 justify-content-center border border-secondary-subtle">
-      <div class="col-10 d-flex flex-row justify-content-center mx-auto">
-        <label for="upload" class="me-1">Upload Files: </label>
-        <input id="upload" type="file" class="file-upload border border-black rounded" (change)="uploadFile($event)">
+      <div class="d-flex flex-rof col-12 justify-content-evenly">
+        <div class="col-6 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
+          <label for="cvSwitch" class="me-2">Is file CV:</label>
+          <input id="cvSwitch" type="checkbox" class="form-check-input m-0" role="switch" (change)="toggleIsCv()">
+        </div>
+        <div class="col-6 d-flex flex-row justify-content-center mx-auto">
+          <label for="upload" class="me-1">Upload Files: </label>
+          <input id="upload" type="file" class="file-upload border border-black rounded" (change)="uploadFile($event)">
+        </div>
       </div>
       
 

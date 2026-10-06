@@ -20,10 +20,15 @@ export class App {
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
 
+  private isUploadedFileCv = false;
 
   async ngOnInit() {
     await this.getCoverLetters();
     console.log(this.files);
+  }
+
+  toggleIsCv() {
+    this.isUploadedFileCv = this.isUploadedFileCv === false ? true : false;
   }
 
   getCoverLetters() {
