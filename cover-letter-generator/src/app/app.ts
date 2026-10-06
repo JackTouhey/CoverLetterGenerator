@@ -19,12 +19,13 @@ export class App {
   private fileCount: number = 1;
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
+  public cvs: CoverLetter[] = [];
+  public selectedCv: number = -1;
 
   private isUploadedFileCv = false;
 
   async ngOnInit() {
     await this.getCoverLetters();
-    console.log(this.files);
   }
 
   toggleIsCv() {
@@ -34,9 +35,16 @@ export class App {
   getCoverLetters() {
     this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
         .subscribe(data => {
-            this.files = data.body;
+          for (const file of data.body) {
+            if (file.isCv) {
+              this.cvs.push(file);
+            } else {
+              this.files.push(file);
+            }
+          }
+          this.files.sort((a, b) => a.id - b.id);
+          this.cvs.sort((a, b) => a.id - b.id);
         });
-    this.files.sort((a, b) => a.id - b.id);
   }
 
   selectCoverLetter(fileId: number) {
@@ -49,9 +57,14 @@ export class App {
     }
   }
 
+  selectCv(fileId: number) {
+    
+  }
+
   generateCoverLetter() {
     let fileIds: string[] = [];
 
+    // Should be refactored to prevent nested loops
     for (const id of this.selectedFiles) {
       for (const file of this.files) {
         if (file.id === id) {

@@ -1,6 +1,6 @@
 import express from 'express';
-import { generateCoverLetter, uploadFile } from './claudeInterface';
-import { getCoverLetters, insertFileId } from './databaseInterface';
+import { generateCoverLetter, uploadFile } from './claudeController';
+import { getCoverLetters, insertFileId } from './databaseController';
 import multer from 'multer';
 
 export const routes = express.Router();

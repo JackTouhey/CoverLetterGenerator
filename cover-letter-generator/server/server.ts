@@ -21,7 +21,7 @@ app.use(express.json());
 // Use the routes in routes.ts
 app.use('/', routes);
 
-// start our server on port 4201
+// start server on port 4201
 app.listen(4201, '127.0.0.1', function () {
     console.log("Server now listening on 4201");
 });
