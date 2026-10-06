@@ -58,11 +58,17 @@ export class App {
   }
 
   selectCv(fileId: number) {
-    
+    if (this.selectedCv === fileId) {
+      this.selectedCv = -1;
+    } else {
+      this.selectedCv = fileId;
+    }
   }
 
   generateCoverLetter() {
     let fileIds: string[] = [];
+    if (this.selectedCv !== -1) {
+    }
 
     // Should be refactored to prevent nested loops
     for (const id of this.selectedFiles) {
@@ -70,6 +76,11 @@ export class App {
         if (file.id === id) {
           fileIds.push(file.fileId);
         }
+      }
+    }
+    for (const file of this.cvs) {
+      if (file.id === this.selectedCv) {
+        fileIds.push(file.fileId);
       }
     }
 
