@@ -55,8 +55,14 @@
       
       
       <br/>
+      <div class="col-12 d-flex flex-row justify-content-center">
+        @if (awaitingClaudeResponse()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        } @else {
+          <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letter</button>
+        }
+      </div>
       
-      <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letter</button>
 
     </div>
   </div>

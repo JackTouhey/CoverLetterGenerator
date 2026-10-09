@@ -22,6 +22,7 @@ export class App {
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
   public selectedCv: number = -1;
+  public awaitingClaudeResponse = signal(false);
 
   private isUploadedFileCv = false;
   private cdr = inject(ChangeDetectorRef);
@@ -89,6 +90,7 @@ export class App {
       }
     }
 
+    this.awaitingClaudeResponse.set(true);
     this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds })
         .subscribe(response => {
             response.files.forEach(b64 => {
@@ -97,6 +99,7 @@ export class App {
                   type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
               }));
           });
+          this.awaitingClaudeResponse.set(false);
         });
   }
 
