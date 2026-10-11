@@ -1,22 +1,10 @@
 import express from 'express';
-import { generateCoverLetter, uploadFile } from './claudeController';
+import { generateCoverLetter, searchForRoles, uploadFile } from './claudeController';
 import { getCoverLetters, insertFileId } from './databaseController';
 import multer from 'multer';
 
 export const routes = express.Router();
 const multerUpload = multer({ storage: multer.memoryStorage() });
-
-routes.post('/generateCoverLetter', async (req, res) => {
-
-    const fileIds: string[] = req.body.files;
-    console.log(fileIds);
-    const blobs: Blob[] = await generateCoverLetter(fileIds);
-    const files = await Promise.all(
-        blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
-    );
-
-    res.status(200).json({ files: files });
-});
 
 routes.get('/getCoverLetters', async (req, res) => {
     console.log("getting Cover Letters"); 
@@ -36,4 +24,21 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
     } else {
         res.status(200).json({ message: 'Not a file stinky' });
     }
+});
+
+routes.post('/generateCoverLetter', async (req, res) => {
+
+    const fileIds: string[] = req.body.files;
+    console.log(fileIds);
+    const blobs: Blob[] = await generateCoverLetter(fileIds);
+    const files = await Promise.all(
+        blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
+    );
+
+    res.status(200).json({ files: files });
+});
+
+routes.get('/searchForRole', async (req, res) => {
+    const response = await searchForRoles();
+    res.status(200).json({ company: response[0], description: response[1] });
 });

@@ -55,7 +55,16 @@
       
       
       <br/>
-      <div class="col-12 d-flex flex-row justify-content-center">
+      <div class="col-12 d-flex flex-column justify-content-center">
+
+        <button (click)="searchForRole()" class="border border-black rounded">Search for Role</button>
+
+        @if (roleFound()) {
+          <p>{{ roleCompany }}</p><br/>
+          <p>{{ roleDescription }}</p>
+        }
+        <br/>
+
         @if (awaitingClaudeResponse()) {
           <i class="fa-solid fa-spinner fa-spin"></i>
         } @else {

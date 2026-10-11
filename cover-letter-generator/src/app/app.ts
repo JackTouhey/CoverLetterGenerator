@@ -17,12 +17,16 @@ export class App {
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
+  private searchForRoleUrl = "http://localhost:4201/searchForRole";
   private fileCount: number = 1;
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
   public selectedCv: number = -1;
   public awaitingClaudeResponse = signal(false);
+  public roleFound = signal(false);
+  public roleCompany = '';
+  public roleDescription = '';
 
   private isUploadedFileCv = false;
   private cdr = inject(ChangeDetectorRef);
@@ -43,8 +47,8 @@ export class App {
     this.cvs = [];
     this.files = [];
     this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
-        .subscribe(data => {
-          for (const file of data.body) {
+        .subscribe(response => {
+          for (const file of response.body) {
             if (file.isCv) {
               this.cvs.push(file);
             } else {
@@ -73,6 +77,16 @@ export class App {
     } else {
       this.selectedCv = fileId;
     }
+  }
+
+  searchForRole() {
+    this.http.get<{ company: string, description: string }>(this.searchForRoleUrl)
+        .subscribe(response => {
+          this.roleCompany = response.company;
+          this.roleDescription = response.description;
+
+          this.roleFound.set(true);
+        });
   }
 
   generateCoverLetter() {
@@ -125,10 +139,9 @@ export class App {
     formData.append('isCv', String(this.isUploadedFileCv));
 
     this.http.post(this.uploadFileUrl, formData)
-      .subscribe(data => {
-        console.log(data);
+      .subscribe(response => {
+        console.log(response);
         this.getCoverLetters();
       });
-    
   }
 }

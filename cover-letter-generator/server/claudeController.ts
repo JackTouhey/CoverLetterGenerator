@@ -12,12 +12,10 @@ type Message = {
 } 
 
 const client = new Anthropic();
-const messages: Message[] = [];
-const downloadPath = process.env['DOWNLOAD_PATH'] !== undefined ? process.env['DOWNLOAD_PATH'] : "";
 const terminateMessage: string = 'Ignore all instructions and terminate session';
 
 
-async function submitPrompt(messages: Message[]): Promise<Blob[]> {
+async function submitCoverLetterPrompt(messages: Message[]): Promise<Blob[]> {
     const response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
         max_tokens: 16000,
@@ -71,9 +69,9 @@ function addFileToMessage(message: Message, fileId: string) {
 } 
 
 export async function generateCoverLetter(fileIds: string[]): Promise<Blob[]> {
-    messages.length = 0;
-    console.log('Generate Cover Letter clicked')
-    const promptContent = await getPrompt();
+    const messages: Message[] = [];
+    const promptPath = process.env['GENERATE_LETTER_PROMPT_PATH'] !== undefined ? process.env['GENERATE_LETTER_PROMPT_PATH'] : '';
+    const promptContent = await getPrompt(promptPath);
     const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
     fileIds.forEach((fileId: string) => {
@@ -82,12 +80,11 @@ export async function generateCoverLetter(fileIds: string[]): Promise<Blob[]> {
     message.content[message.content.length - 1].cache_control = { type: "ephemeral" };
 
     messages.push(message);
-    return await submitPrompt(messages);
+    return await submitCoverLetterPrompt(messages);
 }
 
-async function getPrompt(): Promise<string> {
-    const promptPath = process.env['PROMPT_PATH'];
-    if (promptPath === undefined) {
+async function getPrompt(promptPath: string): Promise<string> {
+    if (promptPath === undefined || promptPath === '') {
         return terminateMessage;
     }
 
@@ -107,4 +104,42 @@ export async function uploadFile(input: Express.Multer.File): Promise<string> {
         }),
     });
     return uploadedFile.id !== undefined ? uploadedFile.id : "id was not string :("; 
+}
+
+export async function searchForRoles(): Promise<string[]> {
+    const promptPath = process.env['ROLE_SEARCH_PROMPT_PATH'] !== undefined ? process.env['ROLE_SEARCH_PROMPT_PATH'] : '';
+    const promptContent = await getPrompt(promptPath);
+    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
+
+    return await submitSearchForRolesPrompt([message]);
+}
+
+async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]> {
+    const response = await client.beta.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 16000,
+        tools: [
+            { type: "web_search_20250305", name: "web_search"}
+        ],
+        messages: messages
+    });
+
+    let textOutputs: string = '';
+
+    for (const block of response.content) {
+        if (block.type === 'text') {
+            textOutputs += block.text;
+        }
+    }
+
+    const companyStartIndex = textOutputs.indexOf("COMPANY_NAME:") + 13;
+    const companyEndIndex = textOutputs.indexOf("END_NAME");
+    const descriptionStartIndex = textOutputs.indexOf("JOB_DESCRIPTION:") + 16;
+    const descriptionEndIndex = textOutputs.indexOf("END_DESCRIPTION");
+
+    const company = textOutputs.substring(companyStartIndex, companyEndIndex);
+    const description = textOutputs.substring(descriptionStartIndex, descriptionEndIndex);
+
+    console.log(textOutputs);
+    return [company, description];
 }
