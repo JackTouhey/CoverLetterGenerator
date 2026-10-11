@@ -29,6 +29,10 @@ export class App {
 
   async ngOnInit() {
     await this.getCoverLetters();
+    for (const file of this.files) {
+      this.selectedFiles.push(file.id);
+    }
+    this.cdr.detectChanges();
   }
 
   toggleIsCv() {
