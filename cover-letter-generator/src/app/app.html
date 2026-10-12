@@ -57,19 +57,24 @@
       <br/>
       <div class="col-12 d-flex flex-column justify-content-center">
 
-        <button (click)="searchForRole()" class="border border-black rounded">Search for Role</button>
+        @if (searchingForRole()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        } @else {
+          <button (click)="searchForRole()" class="border border-black rounded">Search for Role</button>
+        }
 
         @if (roleFound()) {
           <p>{{ roleCompany }}</p><br/>
-          <p>{{ roleDescription }}</p>
-        }
-        <br/>
+          <p>{{ roleDescription }}</p><br/>
+          <p>{{ roleUrl }}</p><br/>
 
-        @if (awaitingClaudeResponse()) {
-          <i class="fa-solid fa-spinner fa-spin"></i>
-        } @else {
-          <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letter</button>
+          @if (awaitingClaudeResponse()) {
+            <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
+          } @else {
+            <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letter</button>
+          }
         }
+        
       </div>
       
 

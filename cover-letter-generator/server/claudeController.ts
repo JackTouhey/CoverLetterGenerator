@@ -22,7 +22,6 @@ async function submitCoverLetterPrompt(messages: Message[]): Promise<Blob[]> {
         betas: ["code-execution-2025-08-25", "files-api-2025-04-14"],
         tools: [
             { type: "code_execution_20250825", name: "code_execution" },
-            { type: "web_search_20250305", name: "web_search"}
         ],
         messages: messages
     });
@@ -68,17 +67,19 @@ function addFileToMessage(message: Message, fileId: string) {
     message.content.push({ type: "container_upload", file_id: fileId });
 } 
 
-export async function generateCoverLetter(fileIds: string[]): Promise<Blob[]> {
+export async function generateCoverLetter(fileIds: string[], roleInformation: string[]): Promise<Blob[]> {
     const messages: Message[] = [];
     const promptPath = process.env['GENERATE_LETTER_PROMPT_PATH'] !== undefined ? process.env['GENERATE_LETTER_PROMPT_PATH'] : '';
-    const promptContent = await getPrompt(promptPath);
+    let promptContent = await getPrompt(promptPath);
+    promptContent += "Company Name: " + roleInformation[0];
+    promptContent += "Role Description: " + roleInformation[1];
     const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
     fileIds.forEach((fileId: string) => {
         addFileToMessage(message, fileId);
     });
     message.content[message.content.length - 1].cache_control = { type: "ephemeral" };
-
+    
     messages.push(message);
     return await submitCoverLetterPrompt(messages);
 }
@@ -136,10 +137,13 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]
     const companyEndIndex = textOutputs.indexOf("END_NAME");
     const descriptionStartIndex = textOutputs.indexOf("JOB_DESCRIPTION:") + 16;
     const descriptionEndIndex = textOutputs.indexOf("END_DESCRIPTION");
+    const urlStartIndex = textOutputs.indexOf("URL_START:") + 10;
+    const urlEndIndex = textOutputs.indexOf("URL_END");
 
     const company = textOutputs.substring(companyStartIndex, companyEndIndex);
     const description = textOutputs.substring(descriptionStartIndex, descriptionEndIndex);
+    const url = textOutputs.substring(urlStartIndex, urlEndIndex);
 
     console.log(textOutputs);
-    return [company, description];
+    return [company, description, url];
 }

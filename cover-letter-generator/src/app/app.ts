@@ -24,9 +24,11 @@ export class App {
   public cvs: CoverLetter[] = [];
   public selectedCv: number = -1;
   public awaitingClaudeResponse = signal(false);
+  public searchingForRole = signal(false);
   public roleFound = signal(false);
   public roleCompany = '';
   public roleDescription = '';
+  public roleUrl = '';
 
   private isUploadedFileCv = false;
   private cdr = inject(ChangeDetectorRef);
@@ -80,16 +82,21 @@ export class App {
   }
 
   searchForRole() {
-    this.http.get<{ company: string, description: string }>(this.searchForRoleUrl)
+    this.searchingForRole.set(true);
+    this.http.get<{ company: string, description: string, url: string }>(this.searchForRoleUrl)
         .subscribe(response => {
           this.roleCompany = response.company;
           this.roleDescription = response.description;
+          this.roleUrl = response.url;
 
           this.roleFound.set(true);
+          this.searchingForRole.set(false);
         });
   }
 
   generateCoverLetter() {
+    const roleInformation = [ this.roleCompany, this.roleDescription ];
+
     let fileIds: string[] = [];
     if (this.selectedCv !== -1) {
     }
@@ -109,7 +116,7 @@ export class App {
     }
 
     this.awaitingClaudeResponse.set(true);
-    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds })
+    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roleInformation: roleInformation })
         .subscribe(response => {
             response.files.forEach(b64 => {
               const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));

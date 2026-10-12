@@ -27,10 +27,9 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
 });
 
 routes.post('/generateCoverLetter', async (req, res) => {
-
     const fileIds: string[] = req.body.files;
-    console.log(fileIds);
-    const blobs: Blob[] = await generateCoverLetter(fileIds);
+    const roleInformation = req.body.roleInformation;
+    const blobs: Blob[] = await generateCoverLetter(fileIds, roleInformation);
     const files = await Promise.all(
         blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
     );
@@ -40,5 +39,5 @@ routes.post('/generateCoverLetter', async (req, res) => {
 
 routes.get('/searchForRole', async (req, res) => {
     const response = await searchForRoles();
-    res.status(200).json({ company: response[0], description: response[1] });
+    res.status(200).json({ company: response[0], description: response[1], url: response[2] });
 });
