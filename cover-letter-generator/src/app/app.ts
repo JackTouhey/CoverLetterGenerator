@@ -26,12 +26,14 @@ export class App {
   public awaitingClaudeResponse = signal(false);
   public searchingForRole = signal(false);
   public roleFound = signal(false);
+  public coverLetterGenerated = signal(false);
   public roleCompany = '';
   public roleDescription = '';
   public roleUrl = '';
 
   private isUploadedFileCv = false;
   private cdr = inject(ChangeDetectorRef);
+  private coverLetterBlob: Blob | undefined = undefined;
 
   async ngOnInit() {
     await this.getCoverLetters();
@@ -120,12 +122,19 @@ export class App {
         .subscribe(response => {
             response.files.forEach(b64 => {
               const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-              this.downloadFile(new Blob([bytes], {
+              this.coverLetterBlob = new Blob([bytes], {
                   type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-              }));
+              });
+              this.coverLetterGenerated.set(true);
           });
           this.awaitingClaudeResponse.set(false);
         });
+  }
+
+  downloadCoverLetter() {
+    if (this.coverLetterBlob !== undefined) {
+      this.downloadFile(this.coverLetterBlob);
+    }    
   }
 
   downloadFile(fileBlob: Blob) {

@@ -116,7 +116,7 @@ export async function searchForRoles(): Promise<string[]> {
 }
 
 async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]> {
-    const response = await client.beta.messages.create({
+    let response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
         max_tokens: 16000,
         tools: [
@@ -132,6 +132,22 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]
             textOutputs += block.text;
         }
     }
+    console.log(response);
+
+    let loopCount = 0;
+    while (response.stop_reason === 'pause_turn' && loopCount < 4) {
+        messages.push(createMessage(false, response.content));
+        response = await client.beta.messages.create({
+            model: 'claude-haiku-4-5',
+            max_tokens: 16000,
+            tools: [
+                { type: "web_search_20250305", name: "web_search"}
+            ],
+            messages: messages
+        });
+        loopCount++;
+        console.log(response);
+    }
 
     const companyStartIndex = textOutputs.indexOf("COMPANY_NAME:") + 13;
     const companyEndIndex = textOutputs.indexOf("END_NAME");
@@ -144,6 +160,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]
     const description = textOutputs.substring(descriptionStartIndex, descriptionEndIndex);
     const url = textOutputs.substring(urlStartIndex, urlEndIndex);
 
-    console.log(textOutputs);
+    // console.log(textOutputs);
+    console.log(response);
     return [company, description, url];
 }
