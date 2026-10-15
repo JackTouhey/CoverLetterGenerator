@@ -138,7 +138,7 @@ export class App {
   }
 
   downloadFile(fileBlob: Blob) {
-    saveAs(fileBlob, 'file' + this.fileCount + '.docx');
+    saveAs(fileBlob, this.roleCompany + ' Cover Letter.docx');
     this.fileCount++;
   }
 
