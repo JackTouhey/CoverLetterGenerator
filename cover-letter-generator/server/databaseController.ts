@@ -30,3 +30,33 @@ export async function getCoverLetters(): Promise<CoverLetter[]> {
         return [];
     }
 }
+
+export async function getCompaniesAppliedTo() {
+    const query = {
+        name: 'getCompanies',
+        text: 'SELECT company_name as "companyName" FROM companies_applied_to'
+    };
+
+    try {
+        const result = await pool.query<String>(query);
+        return result.rows;
+    } catch (error) {
+        console.error('Connection failed:', (error as Error).message);
+        return [];
+    }
+}
+
+export async function insertCompanyAppliedTo(aCompanyName: String) {
+    const query = {
+        name: 'insertCompany',
+        text: 'INSERT INTO companies_applied_to (company_name) VALUES ($1)',
+        values: [aCompanyName]
+    };
+
+    try {
+        console.log('Attempting to insert file ', aCompanyName);
+        await pool.query(query);
+    } catch (error) {
+        console.error('Connection failed:', (error as Error).message);
+    } 
+}
