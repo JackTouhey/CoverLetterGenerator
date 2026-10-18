@@ -31,15 +31,15 @@ export async function getCoverLetters(): Promise<CoverLetter[]> {
     }
 }
 
-export async function getCompaniesAppliedTo() {
+export async function getCompaniesAppliedTo(): Promise<string[]> {
     const query = {
         name: 'getCompanies',
         text: 'SELECT company_name as "companyName" FROM companies_applied_to'
     };
 
     try {
-        const result = await pool.query<String>(query);
-        return result.rows;
+        const result = await pool.query<{ companyName: string }>(query);
+        return result.rows.map(row => row.companyName);
     } catch (error) {
         console.error('Connection failed:', (error as Error).message);
         return [];

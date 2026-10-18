@@ -1,6 +1,6 @@
 import express from 'express';
 import { generateCoverLetter, searchForRoles, uploadFile } from './claudeController';
-import { getCoverLetters, insertFileId } from './databaseController';
+import { getCoverLetters, insertFileId, getCompaniesAppliedTo, insertCompanyAppliedTo } from './databaseController';
 import multer from 'multer';
 
 export const routes = express.Router();
@@ -38,6 +38,7 @@ routes.post('/generateCoverLetter', async (req, res) => {
 });
 
 routes.get('/searchForRole', async (req, res) => {
-    const response = await searchForRoles();
+    const companiesAppliedTo: string[] = await getCompaniesAppliedTo();
+    const response = await searchForRoles(companiesAppliedTo);
     res.status(200).json({ company: response[0], description: response[1], url: response[2] });
 });

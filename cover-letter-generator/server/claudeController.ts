@@ -107,9 +107,14 @@ export async function uploadFile(input: Express.Multer.File): Promise<string> {
     return uploadedFile.id !== undefined ? uploadedFile.id : "id was not string :("; 
 }
 
-export async function searchForRoles(): Promise<string[]> {
+export async function searchForRoles(companiesAppliedTo: string[]): Promise<string[]> {
     const promptPath = process.env['ROLE_SEARCH_PROMPT_PATH'] !== undefined ? process.env['ROLE_SEARCH_PROMPT_PATH'] : '';
-    const promptContent = await getPrompt(promptPath);
+    let promptContent = await getPrompt(promptPath);
+    promptContent += '\n\nThe following companies have already been applied to. If you find a posting for one of these, move on to the next best candidate. \n';
+    for (const companyName of companiesAppliedTo) {
+        promptContent += companyName + '\n';
+    }
+    console.log(promptContent);
     const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
     return await submitSearchForRolesPrompt([message]);
@@ -127,13 +132,6 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]
 
     let textOutputs: string = '';
 
-    for (const block of response.content) {
-        if (block.type === 'text') {
-            textOutputs += block.text;
-        }
-    }
-    console.log(response);
-
     let loopCount = 0;
     while (response.stop_reason === 'pause_turn' && loopCount < 4) {
         messages.push(createMessage(false, response.content));
@@ -145,8 +143,15 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]
             ],
             messages: messages
         });
+        
         loopCount++;
         console.log(response);
+    }
+
+    for (const block of response.content) {
+        if (block.type === 'text') {
+            textOutputs += block.text;
+        }
     }
 
     const companyStartIndex = textOutputs.indexOf("COMPANY_NAME:") + 13;
