@@ -42,3 +42,9 @@ routes.get('/searchForRole', async (req, res) => {
     const response = await searchForRoles(companiesAppliedTo);
     res.status(200).json({ company: response[0], description: response[1], url: response[2] });
 });
+
+routes.post('/insertCompanyAppliedTo', async (req, res) => {
+    const companyName = req.body.companyName;
+    await insertCompanyAppliedTo(companyName);
+    res.status(200);
+});

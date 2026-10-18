@@ -18,6 +18,7 @@ export class App {
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
   private searchForRoleUrl = "http://localhost:4201/searchForRole";
+  private insertCompanyAppliedToUrl = "http://localhost:4201/insertCompanyAppliedTo";
   private fileCount: number = 1;
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
@@ -134,6 +135,10 @@ export class App {
   downloadCoverLetter() {
     if (this.coverLetterBlob !== undefined) {
       this.downloadFile(this.coverLetterBlob);
+      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.roleCompany })
+        .subscribe(response => {
+            
+        });
     }    
   }
 

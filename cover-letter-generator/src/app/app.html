@@ -64,9 +64,9 @@
         }
 
         @if (roleFound()) {
-          <p>{{ roleCompany }}</p><br/>
-          <p>{{ roleDescription }}</p><br/>
-          <a href={{ roleUrl }}><p>{{ roleUrl }}</p></a><br/>
+          <p>Company Name: {{ roleCompany }}</p><br/>
+          <p>Role Description: {{ roleDescription }}</p><br/>
+          <a [href]="roleUrl"><p>{{ roleUrl }}</p></a><br/>
 
           @if (awaitingClaudeResponse()) {
             <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
