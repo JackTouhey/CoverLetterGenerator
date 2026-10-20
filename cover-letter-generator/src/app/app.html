@@ -55,12 +55,30 @@
       
       
       <br/>
-      <div class="col-12 d-flex flex-row justify-content-center">
-        @if (awaitingClaudeResponse()) {
-          <i class="fa-solid fa-spinner fa-spin"></i>
+      <div class="col-12 d-flex flex-column justify-content-center">
+
+        @if (searchingForRole()) {
+          <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
         } @else {
-          <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letter</button>
+          <button (click)="searchForRole()" class="border border-black rounded">Search for Role</button>
         }
+
+        @if (roleFound()) {
+          <p>Company Name: {{ roleCompany }}</p><br/>
+          <p>Role Description: {{ roleDescription }}</p><br/>
+          <a [href]="roleUrl"><p>{{ roleUrl }}</p></a><br/>
+
+          @if (awaitingClaudeResponse()) {
+            <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
+          } @else {
+            @if (coverLetterGenerated()){
+              <button (click)="downloadCoverLetter()" class="border border-black rounded">Download Cover Letter</button>
+            } @else {
+              <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letter</button>
+            }
+          }
+        }
+        
       </div>
       
 

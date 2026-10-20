@@ -17,18 +17,31 @@ export class App {
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
+  private searchForRoleUrl = "http://localhost:4201/searchForRole";
+  private insertCompanyAppliedToUrl = "http://localhost:4201/insertCompanyAppliedTo";
   private fileCount: number = 1;
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
   public selectedCv: number = -1;
   public awaitingClaudeResponse = signal(false);
+  public searchingForRole = signal(false);
+  public roleFound = signal(false);
+  public coverLetterGenerated = signal(false);
+  public roleCompany = '';
+  public roleDescription = '';
+  public roleUrl = '';
 
   private isUploadedFileCv = false;
   private cdr = inject(ChangeDetectorRef);
+  private coverLetterBlob: Blob | undefined = undefined;
 
   async ngOnInit() {
     await this.getCoverLetters();
+    for (const file of this.files) {
+      this.selectedFiles.push(file.id);
+    }
+    this.cdr.detectChanges();
   }
 
   toggleIsCv() {
@@ -39,8 +52,8 @@ export class App {
     this.cvs = [];
     this.files = [];
     this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
-        .subscribe(data => {
-          for (const file of data.body) {
+        .subscribe(response => {
+          for (const file of response.body) {
             if (file.isCv) {
               this.cvs.push(file);
             } else {
@@ -71,7 +84,22 @@ export class App {
     }
   }
 
+  searchForRole() {
+    this.searchingForRole.set(true);
+    this.http.get<{ company: string, description: string, url: string }>(this.searchForRoleUrl)
+        .subscribe(response => {
+          this.roleCompany = response.company;
+          this.roleDescription = response.description;
+          this.roleUrl = response.url;
+
+          this.roleFound.set(true);
+          this.searchingForRole.set(false);
+        });
+  }
+
   generateCoverLetter() {
+    const roleInformation = [ this.roleCompany, this.roleDescription ];
+
     let fileIds: string[] = [];
     if (this.selectedCv !== -1) {
     }
@@ -91,20 +119,31 @@ export class App {
     }
 
     this.awaitingClaudeResponse.set(true);
-    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds })
+    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roleInformation: roleInformation })
         .subscribe(response => {
             response.files.forEach(b64 => {
               const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-              this.downloadFile(new Blob([bytes], {
+              this.coverLetterBlob = new Blob([bytes], {
                   type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-              }));
+              });
+              this.coverLetterGenerated.set(true);
           });
           this.awaitingClaudeResponse.set(false);
         });
   }
 
+  downloadCoverLetter() {
+    if (this.coverLetterBlob !== undefined) {
+      this.downloadFile(this.coverLetterBlob);
+      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.roleCompany })
+        .subscribe(response => {
+            
+        });
+    }    
+  }
+
   downloadFile(fileBlob: Blob) {
-    saveAs(fileBlob, 'file' + this.fileCount + '.docx');
+    saveAs(fileBlob, this.roleCompany + ' Cover Letter.docx');
     this.fileCount++;
   }
 
@@ -121,10 +160,9 @@ export class App {
     formData.append('isCv', String(this.isUploadedFileCv));
 
     this.http.post(this.uploadFileUrl, formData)
-      .subscribe(data => {
-        console.log(data);
+      .subscribe(response => {
+        console.log(response);
         this.getCoverLetters();
       });
-    
   }
 }
