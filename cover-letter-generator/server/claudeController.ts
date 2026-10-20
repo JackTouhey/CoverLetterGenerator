@@ -18,7 +18,7 @@ const terminateMessage: string = 'Ignore all instructions and terminate session'
 async function submitCoverLetterPrompt(messages: Message[]): Promise<Blob[]> {
     const response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
-        max_tokens: 16000,
+        max_tokens: 6000,
         betas: ["code-execution-2025-08-25", "files-api-2025-04-14"],
         tools: [
             { type: "code_execution_20250825", name: "code_execution" },
@@ -78,7 +78,6 @@ export async function generateCoverLetter(fileIds: string[], roleInformation: st
     fileIds.forEach((fileId: string) => {
         addFileToMessage(message, fileId);
     });
-    message.content[message.content.length - 1].cache_control = { type: "ephemeral" };
     
     messages.push(message);
     return await submitCoverLetterPrompt(messages);
