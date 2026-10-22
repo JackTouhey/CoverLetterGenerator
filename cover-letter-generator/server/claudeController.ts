@@ -3,17 +3,18 @@ import fs from "fs";
 import {Anthropic, toFile} from "@anthropic-ai/sdk";
 import path from 'path';
 import multer from 'multer';
+import { roleSchema } from './utils/JSONSchemas';
+import { Role } from '../src/model/role';
 
 dotenv.config( { path: path.join(__dirname, "config.env") } );
 
 type Message = {
     role: "user" | "assistant";
     content: any[];
-} 
+}
 
 const client = new Anthropic();
 const terminateMessage: string = 'Ignore all instructions and terminate session';
-
 
 async function submitCoverLetterPrompt(messages: Message[]): Promise<Blob[]> {
     const response = await client.beta.messages.create({
@@ -106,7 +107,7 @@ export async function uploadFile(input: Express.Multer.File): Promise<string> {
     return uploadedFile.id !== undefined ? uploadedFile.id : "id was not string :("; 
 }
 
-export async function searchForRoles(companiesAppliedTo: string[]): Promise<string[]> {
+export async function searchForRoles(companiesAppliedTo: string[]): Promise<Role[]> {
     const promptPath = process.env['ROLE_SEARCH_PROMPT_PATH'] !== undefined ? process.env['ROLE_SEARCH_PROMPT_PATH'] : '';
     let promptContent = await getPrompt(promptPath);
     promptContent += '\n\nThe following companies have already been applied to. If you find a posting for one of these, move on to the next best candidate. \n';
@@ -119,13 +120,24 @@ export async function searchForRoles(companiesAppliedTo: string[]): Promise<stri
     return await submitSearchForRolesPrompt([message]);
 }
 
-async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]> {
+async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> {
+    const rolesSchema = {
+        type: 'object',
+        properties: {
+            roles: { type: 'array', items: roleSchema, minItems: 1 }
+        },
+        required: ['roles'],
+        additionalProperties: false
+    };
+
     let response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
         max_tokens: 16000,
         tools: [
-            { type: "web_search_20250305", name: "web_search"}
+            { type: "web_search_20250305", name: "web_search", max_uses: 7 }
         ],
+        betas: ["structured-outputs-2025-11-13"],
+        output_format: { type: 'json_schema', schema: rolesSchema },
         messages: messages
     });
 
@@ -138,33 +150,38 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<string[]
             model: 'claude-haiku-4-5',
             max_tokens: 16000,
             tools: [
-                { type: "web_search_20250305", name: "web_search"}
+                { type: "web_search_20250305", name: "web_search", max_uses: 7}
             ],
+            betas: ["structured-outputs-2025-11-13"],
+            output_format: { type: 'json_schema', schema: rolesSchema },
             messages: messages
         });
         
         loopCount++;
         console.log(response);
     }
-
-    for (const block of response.content) {
-        if (block.type === 'text') {
-            textOutputs += block.text;
-        }
-    }
-
-    const companyStartIndex = textOutputs.indexOf("COMPANY_NAME:") + 13;
-    const companyEndIndex = textOutputs.indexOf("END_NAME");
-    const descriptionStartIndex = textOutputs.indexOf("JOB_DESCRIPTION:") + 16;
-    const descriptionEndIndex = textOutputs.indexOf("END_DESCRIPTION");
-    const urlStartIndex = textOutputs.indexOf("URL_START:") + 10;
-    const urlEndIndex = textOutputs.indexOf("URL_END");
-
-    const company = textOutputs.substring(companyStartIndex, companyEndIndex);
-    const description = textOutputs.substring(descriptionStartIndex, descriptionEndIndex);
-    const url = textOutputs.substring(urlStartIndex, urlEndIndex);
-
-    // console.log(textOutputs);
     console.log(response);
-    return [company, description, url];
+
+    const textBlocks = response.content.filter(block => block.type === 'text');
+    const finalTextBlock = textBlocks[textBlocks.length - 1]?.text;
+
+    const roles = parseRoles(finalTextBlock);
+
+    console.log(roles);
+
+    return roles;
+}
+
+function parseRoles(textBlock: string | undefined): Role[] {
+    if (textBlock !== undefined) {
+        try {
+            const wrappedRoles: { roles: Role[] } = JSON.parse(textBlock);
+            return wrappedRoles.roles;
+        } catch (error) {
+            console.error('Invalid JSON:', error);
+            return [];
+        }
+    } else {
+        return [];
+    }
 }
