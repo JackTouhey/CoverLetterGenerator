@@ -3,7 +3,7 @@ import fs from "fs";
 import {Anthropic, toFile} from "@anthropic-ai/sdk";
 import path from 'path';
 import multer from 'multer';
-import { roleSchema, wrappedRolesSchema } from './utils/JSONSchemas';
+import { roleSchema, wrappedRolesSchema, wrappedRoleWithCoverLetterSchema } from './utils/JSONSchemas';
 import { Role } from '../src/model/role';
 
 dotenv.config( { path: path.join(__dirname, "config.env") } );
@@ -148,12 +148,9 @@ export async function generateCoverLetter(fileIds: string[], roles: Role[]): Pro
 async function submitCoverLetterPrompt(messages: Message[]): Promise<Role[]> {
     const response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
-        max_tokens: 6000,
+        max_tokens: 50000,
         betas: ["structured-outputs-2025-11-13", "files-api-2025-04-14"],
-        tools: [
-            { type: "code_execution_20250825", name: "code_execution" },
-        ],
-        output_format: { type: 'json_schema', schema: wrappedRolesSchema },
+        output_format: { type: 'json_schema', schema: wrappedRoleWithCoverLetterSchema },
         messages: messages
     });
     console.log(response);

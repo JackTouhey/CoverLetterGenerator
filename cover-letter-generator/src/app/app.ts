@@ -44,6 +44,7 @@ export class App {
   // Cover Letter generation fields
   private acceptedRoles: Role[] = [];
   private coverLetterBlobs: Blob[]= [];
+  private generatedCompanyNames: string[] = [];
   public generatingCoverLetters = signal(true);
 
   async ngOnInit() {
@@ -163,7 +164,7 @@ export class App {
     }
 
     this.generatingCoverLetters.set(true);
-    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roles: this.acceptedRoles })
+    this.http.post<{ files: string[], companyNames: string[] }>(this.coverLetterUrl, { files: fileIds, roles: this.acceptedRoles })
         .subscribe(response => {
             response.files.forEach(b64 => {
               const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
@@ -171,6 +172,7 @@ export class App {
                   type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
               }));
           });
+          this.generatedCompanyNames = response.companyNames;
           this.coverLetterGenerated.set(true);
           this.generatingCoverLetters.set(false);
         });
@@ -179,10 +181,11 @@ export class App {
   downloadCoverLetter() {
     let roleIndex = 0;
     for (const coverLetterBlob of this.coverLetterBlobs) {
-      this.downloadFile(coverLetterBlob, this.acceptedRoles[roleIndex].companyName);
-      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.acceptedRoles[roleIndex].companyName })
+      this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
+      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
           .subscribe(response => {
           });
+      roleIndex++;
     }
   }
 

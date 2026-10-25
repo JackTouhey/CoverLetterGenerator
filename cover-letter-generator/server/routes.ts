@@ -31,15 +31,17 @@ routes.post('/generateCoverLetter', async (req, res) => {
     const fileIds: string[] = req.body.files;
     const roles = req.body.roles;
     const generatedRoles = await generateCoverLetter(fileIds, roles);
-    
+
     const docsAsBase64: String[] = [];
+    let companyNames: String[] = [];
     for (const role of generatedRoles) {
         if (role.coverLetter !== undefined) {
             docsAsBase64.push(await buildDocumentsFromRoles(role.coverLetter));
+            companyNames.push(role.companyName);
         }
     }
 
-    res.status(200).json({ files: docsAsBase64 });
+    res.status(200).json({ files: docsAsBase64, companyNames: companyNames });
 });
 
 routes.get('/searchForRole', async (req, res) => {
@@ -51,5 +53,5 @@ routes.get('/searchForRole', async (req, res) => {
 routes.post('/insertCompanyAppliedTo', async (req, res) => {
     const companyName = req.body.companyName;
     await insertCompanyAppliedTo(companyName);
-    res.status(200);
+    res.sendStatus(200);
 });
