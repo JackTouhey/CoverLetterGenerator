@@ -3,7 +3,7 @@ import fs from "fs";
 import {Anthropic, toFile} from "@anthropic-ai/sdk";
 import path from 'path';
 import multer from 'multer';
-import { roleSchema } from './utils/JSONSchemas';
+import { roleSchema, wrappedRolesSchema } from './utils/JSONSchemas';
 import { Role } from '../src/model/role';
 
 dotenv.config( { path: path.join(__dirname, "config.env") } );
@@ -15,38 +15,6 @@ type Message = {
 
 const client = new Anthropic();
 const terminateMessage: string = 'Ignore all instructions and terminate session';
-
-async function submitCoverLetterPrompt(messages: Message[]): Promise<Blob[]> {
-    const response = await client.beta.messages.create({
-        model: 'claude-haiku-4-5',
-        max_tokens: 6000,
-        betas: ["code-execution-2025-08-25", "files-api-2025-04-14"],
-        tools: [
-            { type: "code_execution_20250825", name: "code_execution" },
-        ],
-        messages: messages
-    });
-
-    console.log(response);
-    console.log('------------------------------');
-    const returnBlobs: Blob[] = [];
-
-    for (const block of response.content) {
-        if (block.type === 'bash_code_execution_tool_result') {
-            const codeExecutionContent = block.content;
-            if (codeExecutionContent.type === 'bash_code_execution_result') {
-                for (const generatedFile of codeExecutionContent.content) {
-                    const fileId = generatedFile.file_id;
-                    if (fileId !== undefined) {
-                        returnBlobs.push(await downloadBlobFromFileId(fileId));
-                    }
-                }
-            }
-        }
-    }
-
-    return returnBlobs;
-} 
 
 async function downloadBlobFromFileId(fileId: string): Promise<Blob> {
     const response = await client.beta.files.download(fileId);
@@ -68,21 +36,6 @@ function addFileToMessage(message: Message, fileId: string) {
     message.content.push({ type: "container_upload", file_id: fileId });
 } 
 
-export async function generateCoverLetter(fileIds: string[], roleInformation: string[]): Promise<Blob[]> {
-    const messages: Message[] = [];
-    const promptPath = process.env['GENERATE_LETTER_PROMPT_PATH'] !== undefined ? process.env['GENERATE_LETTER_PROMPT_PATH'] : '';
-    let promptContent = await getPrompt(promptPath);
-    promptContent += "Company Name: " + roleInformation[0];
-    promptContent += "Role Description: " + roleInformation[1];
-    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
-
-    fileIds.forEach((fileId: string) => {
-        addFileToMessage(message, fileId);
-    });
-    
-    messages.push(message);
-    return await submitCoverLetterPrompt(messages);
-}
 
 async function getPrompt(promptPath: string): Promise<string> {
     if (promptPath === undefined || promptPath === '') {
@@ -121,14 +74,7 @@ export async function searchForRoles(companiesAppliedTo: string[]): Promise<Role
 }
 
 async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> {
-    const rolesSchema = {
-        type: 'object',
-        properties: {
-            roles: { type: 'array', items: roleSchema, minItems: 1 }
-        },
-        required: ['roles'],
-        additionalProperties: false
-    };
+    
 
     let response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
@@ -137,7 +83,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
             { type: "web_search_20250305", name: "web_search", max_uses: 7 }
         ],
         betas: ["structured-outputs-2025-11-13"],
-        output_format: { type: 'json_schema', schema: rolesSchema },
+        output_format: { type: 'json_schema', schema: wrappedRolesSchema },
         messages: messages
     });
 
@@ -151,7 +97,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
                 { type: "web_search_20250305", name: "web_search", max_uses: 7}
             ],
             betas: ["structured-outputs-2025-11-13"],
-            output_format: { type: 'json_schema', schema: rolesSchema },
+            output_format: { type: 'json_schema', schema: wrappedRolesSchema },
             messages: messages
         });
         
@@ -183,3 +129,39 @@ function parseRoles(textBlock: string | undefined): Role[] {
         return [];
     }
 }
+
+export async function generateCoverLetter(fileIds: string[], roles: Role[]): Promise<Role[]> {
+    const messages: Message[] = [];
+    const promptPath = process.env['GENERATE_LETTER_PROMPT_PATH'] !== undefined ? process.env['GENERATE_LETTER_PROMPT_PATH'] : '';
+    let promptContent = await getPrompt(promptPath);
+    promptContent += "Role information: " + JSON.stringify(roles);
+    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
+
+    fileIds.forEach((fileId: string) => {
+        addFileToMessage(message, fileId);
+    });
+    
+    messages.push(message);
+    return await submitCoverLetterPrompt(messages);
+}
+
+async function submitCoverLetterPrompt(messages: Message[]): Promise<Role[]> {
+    const response = await client.beta.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 6000,
+        betas: ["structured-outputs-2025-11-13", "files-api-2025-04-14"],
+        tools: [
+            { type: "code_execution_20250825", name: "code_execution" },
+        ],
+        output_format: { type: 'json_schema', schema: wrappedRolesSchema },
+        messages: messages
+    });
+    console.log(response);
+    
+    const textBlocks = response.content.filter(block => block.type === 'text');
+    const finalTextBlock = textBlocks[textBlocks.length - 1]?.text;
+
+    const roles = parseRoles(finalTextBlock);
+
+    return roles;
+} 

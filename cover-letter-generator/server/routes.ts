@@ -2,6 +2,7 @@ import express from 'express';
 import { generateCoverLetter, searchForRoles, uploadFile } from './claudeController';
 import { getCoverLetters, insertFileId, getCompaniesAppliedTo, insertCompanyAppliedTo } from './databaseController';
 import multer from 'multer';
+import { buildDocumentsFromRoles } from './documentBuilder';
 
 export const routes = express.Router();
 const multerUpload = multer({ storage: multer.memoryStorage() });
@@ -28,13 +29,17 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
 
 routes.post('/generateCoverLetter', async (req, res) => {
     const fileIds: string[] = req.body.files;
-    const roleInformation = req.body.roleInformation;
-    const blobs: Blob[] = await generateCoverLetter(fileIds, roleInformation);
-    const files = await Promise.all(
-        blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
-    );
+    const roles = req.body.roles;
+    const generatedRoles = await generateCoverLetter(fileIds, roles);
+    
+    const docsAsBase64: String[] = [];
+    for (const role of generatedRoles) {
+        if (role.coverLetter !== undefined) {
+            docsAsBase64.push(await buildDocumentsFromRoles(role.coverLetter));
+        }
+    }
 
-    res.status(200).json({ files: files });
+    res.status(200).json({ files: docsAsBase64 });
 });
 
 routes.get('/searchForRole', async (req, res) => {

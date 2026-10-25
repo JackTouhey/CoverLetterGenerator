@@ -43,7 +43,7 @@ export class App {
 
   // Cover Letter generation fields
   private acceptedRoles: Role[] = [];
-  private coverLetterBlob: Blob | undefined = undefined;
+  private coverLetterBlobs: Blob[]= [];
   public generatingCoverLetters = signal(true);
 
   async ngOnInit() {
@@ -146,11 +146,7 @@ export class App {
 
   generateCoverLetter() {
     // TODO: Handle new Roles
-    const roleInformation: String[] = [];
-
     let fileIds: string[] = [];
-    if (this.selectedCv !== -1) {
-    }
 
     // Should be refactored to prevent nested loops
     for (const id of this.selectedFiles) {
@@ -167,28 +163,27 @@ export class App {
     }
 
     this.generatingCoverLetters.set(true);
-    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roleInformation: roleInformation })
+    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roles: this.acceptedRoles })
         .subscribe(response => {
             response.files.forEach(b64 => {
               const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-              this.coverLetterBlob = new Blob([bytes], {
+              this.coverLetterBlobs.push(new Blob([bytes], {
                   type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-              });
-              this.coverLetterGenerated.set(true);
+              }));
           });
+          this.coverLetterGenerated.set(true);
           this.generatingCoverLetters.set(false);
         });
   }
 
   downloadCoverLetter() {
-    if (this.coverLetterBlob !== undefined) {
-      // TODO Handle company Name
-      this.downloadFile(this.coverLetterBlob, 'companyName');
-      this.http.post(this.insertCompanyAppliedToUrl, { companyName: 'companyName' })
-        .subscribe(response => {
-            
-        });
-    }    
+    let roleIndex = 0;
+    for (const coverLetterBlob of this.coverLetterBlobs) {
+      this.downloadFile(coverLetterBlob, this.acceptedRoles[roleIndex].companyName);
+      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.acceptedRoles[roleIndex].companyName })
+          .subscribe(response => {
+          });
+    }
   }
 
   downloadFile(fileBlob: Blob, companyName: string) {
