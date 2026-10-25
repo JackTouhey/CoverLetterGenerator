@@ -40,7 +40,7 @@ routes.post('/generateCoverLetter', async (req, res) => {
 routes.get('/searchForRole', async (req, res) => {
     const companiesAppliedTo: string[] = await getCompaniesAppliedTo();
     const response = await searchForRoles(companiesAppliedTo);
-    res.status(200).json({ company: response[0], description: response[1], url: response[2] });
+    res.status(200).json({ roles: response });
 });
 
 routes.post('/insertCompanyAppliedTo', async (req, res) => {

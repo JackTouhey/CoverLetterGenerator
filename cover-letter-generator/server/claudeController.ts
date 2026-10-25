@@ -141,8 +141,6 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
         messages: messages
     });
 
-    let textOutputs: string = '';
-
     let loopCount = 0;
     while (response.stop_reason === 'pause_turn' && loopCount < 4) {
         messages.push(createMessage(false, response.content));

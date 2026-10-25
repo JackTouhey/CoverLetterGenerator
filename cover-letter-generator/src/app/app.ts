@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef } from '@angular/core';
 import { CoverLetter } from '../model/coverLetter';
 import { saveAs } from 'file-saver';
+import { Role } from '../model/role';
 
 @Component({
   selector: 'app-root',
@@ -14,27 +15,36 @@ import { saveAs } from 'file-saver';
 export class App {
   protected readonly title = signal('cover-letter-generator');
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
   private searchForRoleUrl = "http://localhost:4201/searchForRole";
   private insertCompanyAppliedToUrl = "http://localhost:4201/insertCompanyAppliedTo";
-  private fileCount: number = 1;
+
+  // Uploaded file selection fields
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
   public selectedCv: number = -1;
-  public awaitingClaudeResponse = signal(false);
-  public searchingForRole = signal(false);
-  public roleFound = signal(false);
-  public coverLetterGenerated = signal(false);
-  public roleCompany = '';
-  public roleDescription = '';
-  public roleUrl = '';
-
   private isUploadedFileCv = false;
-  private cdr = inject(ChangeDetectorRef);
+
+  // Searching for roles fields
+
+  public searchingForRole = signal(false); 
+  // public roleFound = signal(false);
+  public areRolesFound = signal(true);
+  public coverLetterGenerated = signal(false);
+  public rolesFound: Role[] = [ 
+      { companyName: "test1", description: "test1 description", url: "test1url.com" },
+      { companyName: "test2", description: "test2 description", url: "test1ur2.com" } ];
+  public currentRoleIndex = 0;
+  public isMoreRoles = signal(true);
+
+  // Cover Letter generation fields
+  private acceptedRoles: Role[] = [];
   private coverLetterBlob: Blob | undefined = undefined;
+  public generatingCoverLetters = signal(true);
 
   async ngOnInit() {
     await this.getCoverLetters();
@@ -84,21 +94,59 @@ export class App {
     }
   }
 
+  uploadFile(event: Event) {
+    console.log("UploadFile hit");
+    const uploadElement = event.target as HTMLInputElement;
+    let fileList: FileList | null = uploadElement.files;
+
+    if (!fileList || fileList.length === 0) return;
+
+    const file = fileList[0];
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('isCv', String(this.isUploadedFileCv));
+
+    this.http.post(this.uploadFileUrl, formData)
+      .subscribe(response => {
+        console.log(response);
+        this.getCoverLetters();
+      });
+  }
+
   searchForRole() {
     this.searchingForRole.set(true);
-    this.http.get<{ company: string, description: string, url: string }>(this.searchForRoleUrl)
+    this.http.get<{ roles: Role[] }>(this.searchForRoleUrl)
         .subscribe(response => {
-          this.roleCompany = response.company;
-          this.roleDescription = response.description;
-          this.roleUrl = response.url;
+          this.rolesFound = response.roles;
+          this.currentRoleIndex = 0;
 
-          this.roleFound.set(true);
+          this.areRolesFound.set(true);
           this.searchingForRole.set(false);
         });
   }
 
+  passRole() {
+    this.moveToNextRole();
+  }
+
+  acceptRole() {
+    this.acceptedRoles.push(this.rolesFound[this.currentRoleIndex]);
+    this.moveToNextRole();
+  }
+
+  moveToNextRole() {
+    if (this.rolesFound.length > this.currentRoleIndex + 1) {
+      this.currentRoleIndex++;
+    } else {
+      this.isMoreRoles.set(false);
+    }
+    this.cdr.detectChanges();
+  }
+
+
   generateCoverLetter() {
-    const roleInformation = [ this.roleCompany, this.roleDescription ];
+    // TODO: Handle new Roles
+    const roleInformation: String[] = [];
 
     let fileIds: string[] = [];
     if (this.selectedCv !== -1) {
@@ -118,7 +166,7 @@ export class App {
       }
     }
 
-    this.awaitingClaudeResponse.set(true);
+    this.generatingCoverLetters.set(true);
     this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roleInformation: roleInformation })
         .subscribe(response => {
             response.files.forEach(b64 => {
@@ -128,41 +176,24 @@ export class App {
               });
               this.coverLetterGenerated.set(true);
           });
-          this.awaitingClaudeResponse.set(false);
+          this.generatingCoverLetters.set(false);
         });
   }
 
   downloadCoverLetter() {
     if (this.coverLetterBlob !== undefined) {
-      this.downloadFile(this.coverLetterBlob);
-      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.roleCompany })
+      // TODO Handle company Name
+      this.downloadFile(this.coverLetterBlob, 'companyName');
+      this.http.post(this.insertCompanyAppliedToUrl, { companyName: 'companyName' })
         .subscribe(response => {
             
         });
     }    
   }
 
-  downloadFile(fileBlob: Blob) {
-    saveAs(fileBlob, this.roleCompany + ' Cover Letter.docx');
-    this.fileCount++;
+  downloadFile(fileBlob: Blob, companyName: string) {
+    saveAs(fileBlob, companyName + ' Cover Letter.docx');
   }
 
-  uploadFile(event: Event) {
-    console.log("UploadFile hit");
-    const uploadElement = event.target as HTMLInputElement;
-    let fileList: FileList | null = uploadElement.files;
-
-    if (!fileList || fileList.length === 0) return;
-
-    const file = fileList[0];
-    const formData = new FormData();
-    formData.append('file', file, file.name);
-    formData.append('isCv', String(this.isUploadedFileCv));
-
-    this.http.post(this.uploadFileUrl, formData)
-      .subscribe(response => {
-        console.log(response);
-        this.getCoverLetters();
-      });
-  }
+  
 }
