@@ -32,8 +32,7 @@ export class App {
   // Searching for roles fields
 
   public searchingForRole = signal(false); 
-  // public roleFound = signal(false);
-  public areRolesFound = signal(true);
+  public areRolesFound = signal(false);
   public coverLetterGenerated = signal(false);
   public rolesFound: Role[] = [ 
       { companyName: "test1", description: "test1 description", url: "test1url.com" },
@@ -45,7 +44,7 @@ export class App {
   private acceptedRoles: Role[] = [];
   private coverLetterBlobs: Blob[]= [];
   private generatedCompanyNames: string[] = [];
-  public generatingCoverLetters = signal(true);
+  public generatingCoverLetters = signal(false);
 
   async ngOnInit() {
     await this.getCoverLetters();

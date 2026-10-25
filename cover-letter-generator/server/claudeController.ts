@@ -33,7 +33,10 @@ function createMessage(isUser: boolean, content: any): Message {
 }
 
 function addFileToMessage(message: Message, fileId: string) {
-    message.content.push({ type: "container_upload", file_id: fileId });
+    message.content.push({ 
+        type: "document", 
+        source: { type: "file", file_id: fileId }
+    });
 } 
 
 
@@ -148,7 +151,7 @@ export async function generateCoverLetter(fileIds: string[], roles: Role[]): Pro
 async function submitCoverLetterPrompt(messages: Message[]): Promise<Role[]> {
     const response = await client.beta.messages.create({
         model: 'claude-haiku-4-5',
-        max_tokens: 50000,
+        max_tokens: 16000,
         betas: ["structured-outputs-2025-11-13", "files-api-2025-04-14"],
         output_format: { type: 'json_schema', schema: wrappedRoleWithCoverLetterSchema },
         messages: messages
