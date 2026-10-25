@@ -2,6 +2,7 @@ import express from 'express';
 import { generateCoverLetter, searchForRoles, uploadFile } from './claudeController';
 import { getCoverLetters, insertFileId, getCompaniesAppliedTo, insertCompanyAppliedTo } from './databaseController';
 import multer from 'multer';
+import { buildDocumentsFromRoles } from './documentBuilder';
 
 export const routes = express.Router();
 const multerUpload = multer({ storage: multer.memoryStorage() });
@@ -28,23 +29,29 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
 
 routes.post('/generateCoverLetter', async (req, res) => {
     const fileIds: string[] = req.body.files;
-    const roleInformation = req.body.roleInformation;
-    const blobs: Blob[] = await generateCoverLetter(fileIds, roleInformation);
-    const files = await Promise.all(
-        blobs.map(async b => Buffer.from(await b.arrayBuffer()).toString('base64'))
-    );
+    const roles = req.body.roles;
+    const generatedRoles = await generateCoverLetter(fileIds, roles);
 
-    res.status(200).json({ files: files });
+    const docsAsBase64: String[] = [];
+    let companyNames: String[] = [];
+    for (const role of generatedRoles) {
+        if (role.coverLetter !== undefined) {
+            docsAsBase64.push(await buildDocumentsFromRoles(role.coverLetter));
+            companyNames.push(role.companyName);
+        }
+    }
+
+    res.status(200).json({ files: docsAsBase64, companyNames: companyNames });
 });
 
 routes.get('/searchForRole', async (req, res) => {
     const companiesAppliedTo: string[] = await getCompaniesAppliedTo();
     const response = await searchForRoles(companiesAppliedTo);
-    res.status(200).json({ company: response[0], description: response[1], url: response[2] });
+    res.status(200).json({ roles: response });
 });
 
 routes.post('/insertCompanyAppliedTo', async (req, res) => {
     const companyName = req.body.companyName;
     await insertCompanyAppliedTo(companyName);
-    res.status(200);
+    res.sendStatus(200);
 });

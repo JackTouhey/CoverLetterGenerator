@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef } from '@angular/core';
 import { CoverLetter } from '../model/coverLetter';
 import { saveAs } from 'file-saver';
+import { Role } from '../model/role';
 
 @Component({
   selector: 'app-root',
@@ -14,27 +15,36 @@ import { saveAs } from 'file-saver';
 export class App {
   protected readonly title = signal('cover-letter-generator');
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
   private searchForRoleUrl = "http://localhost:4201/searchForRole";
   private insertCompanyAppliedToUrl = "http://localhost:4201/insertCompanyAppliedTo";
-  private fileCount: number = 1;
+
+  // Uploaded file selection fields
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
   public selectedCv: number = -1;
-  public awaitingClaudeResponse = signal(false);
-  public searchingForRole = signal(false);
-  public roleFound = signal(false);
-  public coverLetterGenerated = signal(false);
-  public roleCompany = '';
-  public roleDescription = '';
-  public roleUrl = '';
-
   private isUploadedFileCv = false;
-  private cdr = inject(ChangeDetectorRef);
-  private coverLetterBlob: Blob | undefined = undefined;
+
+  // Searching for roles fields
+
+  public searchingForRole = signal(false); 
+  public areRolesFound = signal(false);
+  public coverLetterGenerated = signal(false);
+  public rolesFound: Role[] = [ 
+      { companyName: "test1", description: "test1 description", url: "test1url.com" },
+      { companyName: "test2", description: "test2 description", url: "test1ur2.com" } ];
+  public currentRoleIndex = 0;
+  public isMoreRoles = signal(true);
+
+  // Cover Letter generation fields
+  private acceptedRoles: Role[] = [];
+  private coverLetterBlobs: Blob[]= [];
+  private generatedCompanyNames: string[] = [];
+  public generatingCoverLetters = signal(false);
 
   async ngOnInit() {
     await this.getCoverLetters();
@@ -84,69 +94,6 @@ export class App {
     }
   }
 
-  searchForRole() {
-    this.searchingForRole.set(true);
-    this.http.get<{ company: string, description: string, url: string }>(this.searchForRoleUrl)
-        .subscribe(response => {
-          this.roleCompany = response.company;
-          this.roleDescription = response.description;
-          this.roleUrl = response.url;
-
-          this.roleFound.set(true);
-          this.searchingForRole.set(false);
-        });
-  }
-
-  generateCoverLetter() {
-    const roleInformation = [ this.roleCompany, this.roleDescription ];
-
-    let fileIds: string[] = [];
-    if (this.selectedCv !== -1) {
-    }
-
-    // Should be refactored to prevent nested loops
-    for (const id of this.selectedFiles) {
-      for (const file of this.files) {
-        if (file.id === id) {
-          fileIds.push(file.fileId);
-        }
-      }
-    }
-    for (const file of this.cvs) {
-      if (file.id === this.selectedCv) {
-        fileIds.push(file.fileId);
-      }
-    }
-
-    this.awaitingClaudeResponse.set(true);
-    this.http.post<{ files: string[] }>(this.coverLetterUrl, { files: fileIds, roleInformation: roleInformation })
-        .subscribe(response => {
-            response.files.forEach(b64 => {
-              const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-              this.coverLetterBlob = new Blob([bytes], {
-                  type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-              });
-              this.coverLetterGenerated.set(true);
-          });
-          this.awaitingClaudeResponse.set(false);
-        });
-  }
-
-  downloadCoverLetter() {
-    if (this.coverLetterBlob !== undefined) {
-      this.downloadFile(this.coverLetterBlob);
-      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.roleCompany })
-        .subscribe(response => {
-            
-        });
-    }    
-  }
-
-  downloadFile(fileBlob: Blob) {
-    saveAs(fileBlob, this.roleCompany + ' Cover Letter.docx');
-    this.fileCount++;
-  }
-
   uploadFile(event: Event) {
     console.log("UploadFile hit");
     const uploadElement = event.target as HTMLInputElement;
@@ -165,4 +112,85 @@ export class App {
         this.getCoverLetters();
       });
   }
+
+  searchForRole() {
+    this.searchingForRole.set(true);
+    this.http.get<{ roles: Role[] }>(this.searchForRoleUrl)
+        .subscribe(response => {
+          this.rolesFound = response.roles;
+          this.currentRoleIndex = 0;
+
+          this.areRolesFound.set(true);
+          this.searchingForRole.set(false);
+        });
+  }
+
+  passRole() {
+    this.moveToNextRole();
+  }
+
+  acceptRole() {
+    this.acceptedRoles.push(this.rolesFound[this.currentRoleIndex]);
+    this.moveToNextRole();
+  }
+
+  moveToNextRole() {
+    if (this.rolesFound.length > this.currentRoleIndex + 1) {
+      this.currentRoleIndex++;
+    } else {
+      this.isMoreRoles.set(false);
+    }
+    this.cdr.detectChanges();
+  }
+
+
+  generateCoverLetter() {
+    // TODO: Handle new Roles
+    let fileIds: string[] = [];
+
+    // Should be refactored to prevent nested loops
+    for (const id of this.selectedFiles) {
+      for (const file of this.files) {
+        if (file.id === id) {
+          fileIds.push(file.fileId);
+        }
+      }
+    }
+    for (const file of this.cvs) {
+      if (file.id === this.selectedCv) {
+        fileIds.push(file.fileId);
+      }
+    }
+
+    this.generatingCoverLetters.set(true);
+    this.http.post<{ files: string[], companyNames: string[] }>(this.coverLetterUrl, { files: fileIds, roles: this.acceptedRoles })
+        .subscribe(response => {
+            response.files.forEach(b64 => {
+              const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+              this.coverLetterBlobs.push(new Blob([bytes], {
+                  type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+              }));
+          });
+          this.generatedCompanyNames = response.companyNames;
+          this.coverLetterGenerated.set(true);
+          this.generatingCoverLetters.set(false);
+        });
+  }
+
+  downloadCoverLetter() {
+    let roleIndex = 0;
+    for (const coverLetterBlob of this.coverLetterBlobs) {
+      this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
+      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
+          .subscribe(response => {
+          });
+      roleIndex++;
+    }
+  }
+
+  downloadFile(fileBlob: Blob, companyName: string) {
+    saveAs(fileBlob, companyName + ' Cover Letter.docx');
+  }
+
+  
 }
