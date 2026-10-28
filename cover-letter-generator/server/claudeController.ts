@@ -143,7 +143,7 @@ export async function generateCoverLetter(fileIds: string[], roles: Role[]): Pro
     fileIds.forEach((fileId: string) => {
         addFileToMessage(message, fileId);
     });
-    
+
     messages.push(message);
     return await submitCoverLetterPrompt(messages);
 }
