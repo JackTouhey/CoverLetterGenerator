@@ -86,6 +86,14 @@ export class App {
     }
   }
 
+  selectAllCoverLetters() {
+    if (this.selectedFiles.length === this.files.length) {
+      this.selectedFiles = [];
+    } else {
+      this.selectedFiles = this.files.map(o => o.id);
+    }
+  }
+
   selectCv(fileId: number) {
     if (this.selectedCv === fileId) {
       this.selectedCv = -1;

@@ -1,8 +1,9 @@
 import express from 'express';
 import { generateCoverLetter, searchForRoles, uploadFile } from './claudeController';
-import { getCoverLetters, insertFileId, getCompaniesAppliedTo, insertCompanyAppliedTo } from './databaseController';
+import { getCoverLetters, insertFile, getCompaniesAppliedTo, insertCompanyAppliedTo } from './databaseController';
 import multer from 'multer';
 import { buildDocumentsFromRoles } from './documentBuilder';
+import { ExtractPdfContent } from './utils/fileStringExtraction';
 
 export const routes = express.Router();
 const multerUpload = multer({ storage: multer.memoryStorage() });
@@ -18,10 +19,11 @@ routes.get('/getCoverLetters', async (req, res) => {
 routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
     if (req.file) {
         console.log('file name ', req.file.originalname);
-        const response = await uploadFile(req.file);
+        const fileText = await ExtractPdfContent(req.file.buffer);
+        console.log("Uploaded file text: " + fileText);
         const isCv = req.body.isCv === 'true';
-        await insertFileId(response, req.file.originalname, isCv);
-        res.status(200).json({ message: response });
+        await insertFile(req.file.originalname, isCv, fileText);
+        res.status(200).json({ message: req.file.originalname });
     } else {
         res.status(200).json({ message: 'Not a file stinky' });
     }
