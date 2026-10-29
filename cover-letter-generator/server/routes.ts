@@ -30,9 +30,9 @@ routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
 });
 
 routes.post('/generateCoverLetter', async (req, res) => {
-    const fileIds: string[] = req.body.files;
+    const coverLetterBodies: string[] = req.body.files;
     const roles = req.body.roles;
-    const generatedRoles = await generateCoverLetter(fileIds, roles);
+    const generatedRoles = await generateCoverLetter(coverLetterBodies, roles);
 
     const docsAsBase64: String[] = [];
     let companyNames: String[] = [];

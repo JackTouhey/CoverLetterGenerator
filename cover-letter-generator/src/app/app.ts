@@ -154,24 +154,24 @@ export class App {
 
   generateCoverLetter() {
     // TODO: Handle new Roles
-    let fileIds: string[] = [];
+    let coverLetterBodies: string[] = [];
 
     // Should be refactored to prevent nested loops
     for (const id of this.selectedFiles) {
       for (const file of this.files) {
         if (file.id === id) {
-          fileIds.push(file.fileId);
+          coverLetterBodies.push(file.text);
         }
       }
     }
     for (const file of this.cvs) {
       if (file.id === this.selectedCv) {
-        fileIds.push(file.fileId);
+        coverLetterBodies.push(file.text);
       }
     }
 
     this.generatingCoverLetters.set(true);
-    this.http.post<{ files: string[], companyNames: string[] }>(this.coverLetterUrl, { files: fileIds, roles: this.acceptedRoles })
+    this.http.post<{ files: string[], companyNames: string[] }>(this.coverLetterUrl, { files: coverLetterBodies, roles: this.acceptedRoles })
         .subscribe(response => {
             response.files.forEach(b64 => {
               const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));

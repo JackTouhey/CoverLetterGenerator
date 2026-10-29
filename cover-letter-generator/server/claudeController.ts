@@ -114,8 +114,6 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
 
     const roles = parseRoles(finalTextBlock);
 
-    console.log(roles);
-
     return roles;
 }
 
@@ -133,16 +131,16 @@ function parseRoles(textBlock: string | undefined): Role[] {
     }
 }
 
-export async function generateCoverLetter(fileIds: string[], roles: Role[]): Promise<Role[]> {
+export async function generateCoverLetter(coverLetterBodies: string[], roles: Role[]): Promise<Role[]> {
     const messages: Message[] = [];
     const promptPath = process.env['GENERATE_LETTER_PROMPT_PATH'] !== undefined ? process.env['GENERATE_LETTER_PROMPT_PATH'] : '';
     let promptContent = await getPrompt(promptPath);
-    promptContent += "Role information: " + JSON.stringify(roles);
-    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
-    fileIds.forEach((fileId: string) => {
-        addFileToMessage(message, fileId);
-    });
+    promptContent += "Example Cover Letters & CV: " + coverLetterBodies;
+    promptContent += "Role information: " + JSON.stringify(roles);
+
+    console.log(promptContent);
+    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
     messages.push(message);
     return await submitCoverLetterPrompt(messages);

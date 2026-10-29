@@ -19,14 +19,14 @@ export async function insertFile(aFileName: String, isCv: boolean, aFileText: st
 export async function getCoverLetters(): Promise<CoverLetter[]> {
     const query = {
         name: 'getCoverLetters',
-        text: 'SELECT id, file_name as name, is_cv as "isCv" FROM file_ids',
+        text: 'SELECT id, file_name as name, is_cv as "isCv", file_text as "text" FROM file_ids',
     };
 
     try {
         const result = await pool.query<CoverLetter>(query);
         return result.rows;
     } catch (error) {
-        console.error('Connection failed:', (error as Error).message);
+        console.error('getCoverLetters error:', (error as Error).message);
         return [];
     }
 }
