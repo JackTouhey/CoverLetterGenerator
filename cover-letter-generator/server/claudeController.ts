@@ -80,7 +80,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
     
 
     let response = await client.beta.messages.create({
-        model: 'claude-haiku-4-5',
+        model: 'claude-haiku-5-5',
         max_tokens: 16000,
         tools: [
             { type: "web_search_20250305", name: "web_search", max_uses: 7 }
@@ -94,7 +94,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
     while (response.stop_reason === 'pause_turn' && loopCount < 4) {
         messages.push(createMessage(false, response.content));
         response = await client.beta.messages.create({
-            model: 'claude-haiku-4-5',
+            model: 'claude-haiku-5-5',
             max_tokens: 16000,
             tools: [
                 { type: "web_search_20250305", name: "web_search", max_uses: 7}
@@ -114,8 +114,6 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
 
     const roles = parseRoles(finalTextBlock);
 
-    console.log(roles);
-
     return roles;
 }
 
@@ -133,16 +131,16 @@ function parseRoles(textBlock: string | undefined): Role[] {
     }
 }
 
-export async function generateCoverLetter(fileIds: string[], roles: Role[]): Promise<Role[]> {
+export async function generateCoverLetter(coverLetterBodies: string[], roles: Role[]): Promise<Role[]> {
     const messages: Message[] = [];
     const promptPath = process.env['GENERATE_LETTER_PROMPT_PATH'] !== undefined ? process.env['GENERATE_LETTER_PROMPT_PATH'] : '';
     let promptContent = await getPrompt(promptPath);
-    promptContent += "Role information: " + JSON.stringify(roles);
-    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
-    fileIds.forEach((fileId: string) => {
-        addFileToMessage(message, fileId);
-    });
+    promptContent += "Example Cover Letters & CV: " + coverLetterBodies;
+    promptContent += "Role information: " + JSON.stringify(roles);
+
+    console.log(promptContent);
+    const message: Message = createMessage(true, [{ type: "text", text: promptContent }]);
 
     messages.push(message);
     return await submitCoverLetterPrompt(messages);
@@ -150,7 +148,7 @@ export async function generateCoverLetter(fileIds: string[], roles: Role[]): Pro
 
 async function submitCoverLetterPrompt(messages: Message[]): Promise<Role[]> {
     const response = await client.beta.messages.create({
-        model: 'claude-haiku-4-5',
+        model: 'claude-haiku-5-5',
         max_tokens: 16000,
         betas: ["structured-outputs-2025-11-13", "files-api-2025-04-14"],
         output_format: { type: 'json_schema', schema: wrappedRoleWithCoverLetterSchema },

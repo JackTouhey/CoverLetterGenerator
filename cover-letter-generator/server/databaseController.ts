@@ -1,15 +1,15 @@
 import pool from './utils/connectionPool';
 import { CoverLetter } from '../src/model/coverLetter';
 
-export async function insertFileId(aFileId: String, aFileName: String, isCv: boolean) {
+export async function insertFile(aFileName: String, isCv: boolean, aFileText: string) {
     const query = {
         name: 'insertFile',
-        text: 'INSERT INTO file_ids (file_id, file_name, is_cv) VALUES ($1, $2, $3)',
-        values: [aFileId, aFileName, isCv]
+        text: 'INSERT INTO file_ids (file_name, is_cv, file_text) VALUES ($1, $2, $3)',
+        values: [aFileName, isCv, aFileText]
     };
 
     try {
-        console.log('Attempting to insert file ', aFileId);
+        console.log('Attempting to insert file ', aFileName);
         await pool.query(query);
     } catch (error) {
         console.error('Connection failed:', (error as Error).message);
@@ -19,14 +19,14 @@ export async function insertFileId(aFileId: String, aFileName: String, isCv: boo
 export async function getCoverLetters(): Promise<CoverLetter[]> {
     const query = {
         name: 'getCoverLetters',
-        text: 'SELECT id, file_id as "fileId", file_name as name, is_cv as "isCv" FROM file_ids',
+        text: 'SELECT id, file_name as name, is_cv as "isCv", file_text as "text" FROM file_ids',
     };
 
     try {
         const result = await pool.query<CoverLetter>(query);
         return result.rows;
     } catch (error) {
-        console.error('Connection failed:', (error as Error).message);
+        console.error('getCoverLetters error:', (error as Error).message);
         return [];
     }
 }
@@ -54,9 +54,9 @@ export async function insertCompanyAppliedTo(aCompanyName: String) {
     };
 
     try {
-        console.log('Attempting to insert file ', aCompanyName);
+        console.log('Attempting to insert company applied to', aCompanyName);
         await pool.query(query);
     } catch (error) {
-        console.error('Connection failed:', (error as Error).message);
+        console.error('Error inserting company applied to: ', (error as Error).message);
     } 
 }
