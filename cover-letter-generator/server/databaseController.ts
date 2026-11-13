@@ -54,9 +54,9 @@ export async function insertCompanyAppliedTo(aCompanyName: String) {
     };
 
     try {
-        console.log('Attempting to insert file ', aCompanyName);
+        console.log('Attempting to insert company applied to', aCompanyName);
         await pool.query(query);
     } catch (error) {
-        console.error('Connection failed:', (error as Error).message);
+        console.error('Error inserting company applied to: ', (error as Error).message);
     } 
 }

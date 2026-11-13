@@ -80,7 +80,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
     
 
     let response = await client.beta.messages.create({
-        model: 'claude-haiku-4-5',
+        model: 'claude-haiku-5-5',
         max_tokens: 16000,
         tools: [
             { type: "web_search_20250305", name: "web_search", max_uses: 7 }
@@ -94,7 +94,7 @@ async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> 
     while (response.stop_reason === 'pause_turn' && loopCount < 4) {
         messages.push(createMessage(false, response.content));
         response = await client.beta.messages.create({
-            model: 'claude-haiku-4-5',
+            model: 'claude-haiku-5-5',
             max_tokens: 16000,
             tools: [
                 { type: "web_search_20250305", name: "web_search", max_uses: 7}
@@ -148,7 +148,7 @@ export async function generateCoverLetter(coverLetterBodies: string[], roles: Ro
 
 async function submitCoverLetterPrompt(messages: Message[]): Promise<Role[]> {
     const response = await client.beta.messages.create({
-        model: 'claude-haiku-4-5',
+        model: 'claude-haiku-5-5',
         max_tokens: 16000,
         betas: ["structured-outputs-2025-11-13", "files-api-2025-04-14"],
         output_format: { type: 'json_schema', schema: wrappedRoleWithCoverLetterSchema },
