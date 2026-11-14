@@ -5,6 +5,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { CoverLetter } from '../model/coverLetter';
 import { saveAs } from 'file-saver';
 import { Role } from '../model/role';
+import sampleRoles from '../testing/sampleRoles.json';
 
 @Component({
   selector: 'app-root',
@@ -30,15 +31,13 @@ export class App {
   private isUploadedFileCv = false;
 
   // Searching for roles fields
-
   public searchingForRole = signal(false); 
   public areRolesFound = signal(false);
   public coverLetterGenerated = signal(false);
-  public rolesFound: Role[] = [ 
-      { companyName: "test1", description: "test1 description", url: "test1url.com" },
-      { companyName: "test2", description: "test2 description", url: "test1ur2.com" } ];
+  public rolesFound: Role[] = [];
   public currentRoleIndex = 0;
   public isMoreRoles = signal(true);
+  public usingSampleData = signal(false);
 
   // Cover Letter generation fields
   private acceptedRoles: Role[] = [];
@@ -52,6 +51,14 @@ export class App {
       this.selectedFiles.push(file.id);
     }
     this.cdr.detectChanges();
+  }
+
+  populateTestData() {
+    this.rolesFound = sampleRoles.roles;
+    this.currentRoleIndex = 0;
+    this.areRolesFound.set(true);
+    this.searchingForRole.set(false);
+    this.usingSampleData.set(true);
   }
 
   toggleIsCv() {
@@ -151,9 +158,7 @@ export class App {
     this.cdr.detectChanges();
   }
 
-
   generateCoverLetter() {
-    // TODO: Handle new Roles
     let coverLetterBodies: string[] = [];
 
     // Should be refactored to prevent nested loops
@@ -189,9 +194,12 @@ export class App {
     let roleIndex = 0;
     for (const coverLetterBlob of this.coverLetterBlobs) {
       this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
-      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
+      if (this.usingSampleData() === false) {
+        this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
           .subscribe(response => {
           });
+      }
+      
       roleIndex++;
     }
   }
@@ -199,6 +207,4 @@ export class App {
   downloadFile(fileBlob: Blob, companyName: string) {
     saveAs(fileBlob, companyName + ' Cover Letter.docx');
   }
-
-  
 }
