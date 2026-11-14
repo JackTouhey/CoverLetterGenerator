@@ -1,0 +1,24 @@
+{
+    "roles": [
+        {
+            "companyName": "Coastal Health Systems",
+            "url": "https://careers.example.com/coastal-health-systems/junior-backend-developer",
+            "description": "Junior Backend Developer - Maroochydore, QLD (hybrid). We build practice management and prescribing software used by pharmacies and GP clinics across Queensland. You will work with a small team building Node.js and TypeScript services backed by PostgreSQL, including data import pipelines that sync patient and medication records between systems. Responsibilities: develop and maintain REST APIs, write parameterised SQL queries, help investigate data integrity issues, and write unit and integration tests. Requirements: a degree in IT, software development or a related field; experience with TypeScript or JavaScript; working knowledge of relational databases and SQL; strong attention to detail. Desirable: understanding of healthcare data standards or pharmacy workflows, and awareness of privacy obligations when handling health information."
+        },
+        {
+            "companyName": "Brightwave Digital",
+            "url": "https://careers.example.com/brightwave-digital/junior-full-stack-developer",
+            "description": "Junior Full Stack Developer - Brisbane, QLD (3 days in office). Brightwave Digital delivers internal business tools for mid-sized Australian companies. You will join a team of six building Angular front ends with Node.js and Express back ends. Responsibilities: build and refine UI components, consume and design REST endpoints, integrate third-party APIs, take part in code reviews and sprint planning, and fix bugs reported by clients. Requirements: experience with Angular or a similar framework; solid HTML, CSS and TypeScript fundamentals; familiarity with Git; clear written communication. Desirable: Bootstrap or Tailwind experience, exposure to file upload and document generation features, and an interest in AI-assisted tooling. We offer mentoring from senior engineers and a structured 12-month graduate development plan."
+        },
+        {
+            "companyName": "Northgate Logistics Technology",
+            "url": "https://careers.example.com/northgate-logistics/graduate-software-developer-dotnet",
+            "description": "Graduate Software Developer (C# / .NET) - Remote within Australia. Northgate provides freight tracking and scheduling platforms for transport operators. You will work on a .NET 8 web API and a SQL Server database, contributing to features such as shipment status updates and automated reporting. Responsibilities: implement features from well-defined tickets, write unit tests, optimise slow queries with guidance, and maintain technical documentation. Requirements: a degree or Masters in software development or a related discipline; understanding of object-oriented programming; basic knowledge of SQL; willingness to learn cloud deployment on Azure. Desirable: any prior project work with APIs or data processing, and experience communicating technical issues to non-technical colleagues. Full working rights in Australia are required."
+        },
+        {
+            "companyName": "Redgum Analytics",
+            "url": "https://careers.example.com/redgum-analytics/junior-data-software-engineer",
+            "description": "Junior Data Software Engineer - Sunshine Coast, QLD (flexible hybrid). Redgum Analytics helps life sciences and healthcare organisations make sense of their operational data. You will help build and maintain Python and TypeScript tools that clean, validate and load structured datasets, such as CSV exports from clinical and pharmacy systems, into PostgreSQL. Responsibilities: write data validation and transformation scripts, handle messy or incomplete records, monitor scheduled jobs, and document data flows. Requirements: programming experience in Python or TypeScript; ability to write SQL joins and aggregations; a methodical approach to testing and edge cases. Desirable: a science background such as chemistry, pharmacology or biology, and an interest in regulated data environments. Training provided in our internal tooling."
+        }
+    ]
+}

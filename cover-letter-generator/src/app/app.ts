@@ -30,7 +30,6 @@ export class App {
   private isUploadedFileCv = false;
 
   // Searching for roles fields
-
   public searchingForRole = signal(false); 
   public areRolesFound = signal(false);
   public coverLetterGenerated = signal(false);
