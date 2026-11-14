@@ -40,7 +40,8 @@ export class App {
   public usingSampleData = signal(false);
 
   // Cover Letter generation fields
-  private acceptedRoles: Role[] = [];
+  public acceptedRoles: Role[] = [];
+  public passedRoles: Role[] = [];
   private coverLetterBlobs: Blob[]= [];
   private generatedCompanyNames: string[] = [];
   public generatingCoverLetters = signal(false);
@@ -141,6 +142,7 @@ export class App {
   }
 
   passRole() {
+    this.passedRoles.push(this.rolesFound[this.currentRoleIndex]);
     this.moveToNextRole();
   }
 

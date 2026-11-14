@@ -83,12 +83,31 @@
             }
 
             <div class="d-flex flex-row justify-content-evenly col-12 mb-3">
-              <button (click)="passRole()" class="border border-black rounded col-5">Pass role</button>
-              <button (click)="acceptRole()" class="border border-black rounded col-5">Accept role</button>
+              <div class="d-flex flex-column col-5">
+                <button (click)="passRole()" class="border border-black rounded col-5 mx-auto">Pass role</button>
+              </div>
+              <div class="d-flex flex-column justify-content-center col-5">
+                <button (click)="acceptRole()" class="border border-black rounded col-5 mx-auto">Accept role</button>
+              </div>
             </div>
           } @else {
             <p class="align-self-center">No more roles to assess</p>
           }
+          <div class="d-flex flex-row justify-content-evenly col-12 mb-3">
+            <div class="d-flex flex-column col-5">
+              <h4 class="mx-auto mb-0">Passed Roles</h4><hr>
+                @for (role of passedRoles; track role.companyName) {
+                  <p class="mx-auto">{{ role.companyName }}</p>
+                }
+              </div>
+              <div class="d-flex flex-column justify-content-center col-5">
+                <h4 class="mx-auto mb-0">Accepted Roles</h4><hr>
+                @for (role of acceptedRoles; track role.companyName) {
+                  <p class="mx-auto">{{ role.companyName }}</p>
+                }
+              </div>
+          </div>
+          
           
           @if (generatingCoverLetters()) {
             <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
