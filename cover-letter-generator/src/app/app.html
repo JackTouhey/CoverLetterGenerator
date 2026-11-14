@@ -5,7 +5,10 @@
 <main class="main">
   <div class="col-12 d-flex flex-row justify-content-center">
     <div class="d-flex flex-column col-11 justify-content-center border border-secondary-subtle">
-      <button (click)="populateTestData()" class="border border-black rounded col-12 mb-2">Populate Test Data</button>
+      @if (!usingSampleData()) {
+        <button (click)="populateTestData()" class="border border-black rounded col-12 mb-2">Populate Test Data</button>
+      }
+      
       <div class="d-flex flex-row col-12 justify-content-evenly">
         <div class="col-6 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
           <label for="cvSwitch" class="me-2">Is file CV:</label>
@@ -79,7 +82,7 @@
               <a [href]="rolesFound[currentRoleIndex].url"><p>{{ rolesFound[currentRoleIndex].url }}</p></a><br/>
             }
 
-            <div class="d-flex flex-row justify-content-between col-12">
+            <div class="d-flex flex-row justify-content-evenly col-12 mb-3">
               <button (click)="passRole()" class="border border-black rounded col-5">Pass role</button>
               <button (click)="acceptRole()" class="border border-black rounded col-5">Accept role</button>
             </div>
@@ -91,8 +94,8 @@
             <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
           } @else {
             @if (coverLetterGenerated()){
-              <button (click)="downloadCoverLetter()" class="border border-black rounded">Download Cover Letters</button>
-            } @else {
+              <button (click)="downloadCoverLetter()" class="border border-black rounded bg-success-subtle">Download Cover Letters</button>
+            } @else if(!isMoreRoles()) {
               <button (click)="generateCoverLetter()" class="border border-black rounded">Generate Cover Letters</button>
             }
           }

@@ -159,7 +159,6 @@ export class App {
   }
 
   generateCoverLetter() {
-    // TODO: Handle new Roles
     let coverLetterBodies: string[] = [];
 
     // Should be refactored to prevent nested loops
@@ -195,9 +194,12 @@ export class App {
     let roleIndex = 0;
     for (const coverLetterBlob of this.coverLetterBlobs) {
       this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
-      this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
+      if (this.usingSampleData() === false) {
+        this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
           .subscribe(response => {
           });
+      }
+      
       roleIndex++;
     }
   }
@@ -205,6 +207,4 @@ export class App {
   downloadFile(fileBlob: Blob, companyName: string) {
     saveAs(fileBlob, companyName + ' Cover Letter.docx');
   }
-
-  
 }
