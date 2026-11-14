@@ -5,6 +5,7 @@
 <main class="main">
   <div class="col-12 d-flex flex-row justify-content-center">
     <div class="d-flex flex-column col-11 justify-content-center border border-secondary-subtle">
+      <button (click)="populateTestData()" class="border border-black rounded col-12 mb-2">Populate Test Data</button>
       <div class="d-flex flex-row col-12 justify-content-evenly">
         <div class="col-6 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
           <label for="cvSwitch" class="me-2">Is file CV:</label>
@@ -25,7 +26,7 @@
               <i class="fa-solid fa-circle my-auto"></i>
             } @else {
               <i class="fa-regular fa-circle my-auto"></i>
-            }
+            } 
             <p class="my-auto">Select All</p>
           </div>
           <ul>
@@ -66,7 +67,7 @@
 
         @if (searchingForRole()) {
           <i class="fa-solid fa-spinner fa-spin align-self-center"></i>
-        } @else {
+        } @else if (!usingSampleData()) {
           <button (click)="searchForRole()" class="border border-black rounded">Search for Roles</button>
         }
 

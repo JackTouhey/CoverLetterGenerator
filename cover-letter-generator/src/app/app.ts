@@ -5,6 +5,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { CoverLetter } from '../model/coverLetter';
 import { saveAs } from 'file-saver';
 import { Role } from '../model/role';
+import sampleRoles from '../testing/sampleRoles.json';
 
 @Component({
   selector: 'app-root',
@@ -33,11 +34,10 @@ export class App {
   public searchingForRole = signal(false); 
   public areRolesFound = signal(false);
   public coverLetterGenerated = signal(false);
-  public rolesFound: Role[] = [ 
-      { companyName: "test1", description: "test1 description", url: "test1url.com" },
-      { companyName: "test2", description: "test2 description", url: "test1ur2.com" } ];
+  public rolesFound: Role[] = [];
   public currentRoleIndex = 0;
   public isMoreRoles = signal(true);
+  public usingSampleData = signal(false);
 
   // Cover Letter generation fields
   private acceptedRoles: Role[] = [];
@@ -51,6 +51,14 @@ export class App {
       this.selectedFiles.push(file.id);
     }
     this.cdr.detectChanges();
+  }
+
+  populateTestData() {
+    this.rolesFound = sampleRoles.roles;
+    this.currentRoleIndex = 0;
+    this.areRolesFound.set(true);
+    this.searchingForRole.set(false);
+    this.usingSampleData.set(true);
   }
 
   toggleIsCv() {
@@ -149,7 +157,6 @@ export class App {
     }
     this.cdr.detectChanges();
   }
-
 
   generateCoverLetter() {
     // TODO: Handle new Roles
