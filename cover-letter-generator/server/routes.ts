@@ -1,6 +1,6 @@
 import express from 'express';
 import { generateCoverLetter, searchForRoles, uploadFile } from './claudeController';
-import { getCoverLetters, insertFile, getCompaniesAppliedTo, insertCompanyAppliedTo } from './databaseController';
+import { getCoverLetters, insertFile, getCompaniesAppliedTo, insertCompanyAppliedTo, deleteCompanyAppliedTo } from './databaseController';
 import multer from 'multer';
 import { buildDocumentsFromRoles } from './documentBuilder';
 import { ExtractPdfContent } from './utils/fileStringExtraction';
@@ -10,10 +10,10 @@ const multerUpload = multer({ storage: multer.memoryStorage() });
 
 routes.get('/getCoverLetters', async (req, res) => {
     console.log("getting Cover Letters"); 
+    const companiesAppliedTo: string[] = await getCompaniesAppliedTo();
+    const coverLetters = await getCoverLetters();
 
-    const result = await getCoverLetters();
-
-    res.send( {body: result} );
+    res.send( { coverLetters: coverLetters, previousCompanies: companiesAppliedTo} );
 });
 
 routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {
@@ -55,5 +55,11 @@ routes.get('/searchForRole', async (req, res) => {
 routes.post('/insertCompanyAppliedTo', async (req, res) => {
     const companyName = req.body.companyName;
     await insertCompanyAppliedTo(companyName);
-    res.sendStatus(200);
+    res.status(200).json({ body: 'success' });
+});
+
+routes.post('/deleteCompanyAppliedTo', async (req, res) => {
+    const companyName = req.body.companyName;
+    await deleteCompanyAppliedTo(companyName);
+    res.status(200).json({ body: 'success' });
 });

@@ -22,11 +22,13 @@ export class App {
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
   private searchForRoleUrl = "http://localhost:4201/searchForRole";
   private insertCompanyAppliedToUrl = "http://localhost:4201/insertCompanyAppliedTo";
+  private deleteCompanyAppliedToUrl = "http://localhost:4201/deleteCompanyAppliedTo"
 
   // Uploaded file selection fields
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
+  public previousCompanies = signal<string[]>([]);
   public selectedCv: number = -1;
   private isUploadedFileCv = false;
 
@@ -69,15 +71,16 @@ export class App {
   getCoverLetters() {
     this.cvs = [];
     this.files = [];
-    this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
+    this.http.get< { coverLetters: CoverLetter[], previousCompanies: string[] }>(this.getCoverLettersUrl)
         .subscribe(response => {
-          for (const file of response.body) {
+          for (const file of response.coverLetters) {
             if (file.isCv) {
               this.cvs.push(file);
             } else {
               this.files.push(file);
             }
           }
+          this.previousCompanies.set(response.previousCompanies);
           this.files.sort((a, b) => a.id - b.id);
           this.cvs.sort((a, b) => a.id - b.id);
           this.cdr.detectChanges();
@@ -127,6 +130,14 @@ export class App {
         console.log(response);
         this.getCoverLetters();
       });
+  }
+
+  deletePriorCompany(companyToDelete: string) {
+    this.http.post<{ body: string }>(this.deleteCompanyAppliedToUrl, { companyName: companyToDelete })
+        .subscribe(response => {
+            console.log(response.body);
+            this.getCoverLetters();
+        });
   }
 
   searchForRole() {
@@ -197,8 +208,10 @@ export class App {
     for (const coverLetterBlob of this.coverLetterBlobs) {
       this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
       if (this.usingSampleData() === false) {
-        this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
+        this.http.post<{ body: string }>(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
           .subscribe(response => {
+            console.log(response.body);
+            this.getCoverLetters();
           });
       }
       
