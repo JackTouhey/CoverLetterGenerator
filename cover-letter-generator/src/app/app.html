@@ -22,8 +22,8 @@
       
       <br/>
 
-      <div class="col-12 d-flex flex-row justify-content-between">
-        <div class="col-5 d-flex flex-column">
+      <div class="col-12 d-flex flex-row justify-content-evenly">
+        <div class="col-4 d-flex flex-column">
           <div (click)="selectAllCoverLetters()" class="d-flex flex-row justify-content-left user-select-none ms-4 ps-2">
             @if (selectedFiles.length === files.length) {
               <i class="fa-solid fa-circle my-auto"></i>
@@ -47,7 +47,7 @@
             }
           </ul>
         </div>
-        <div class="col-5 me-3">
+        <div class="col-4 d-flex flex-column">
           <ul>
             @for (file of cvs; track file.id) {
               <li class="col-12 d-flex justify-content-start border border-black rounded mt-2 user-select-none" (click)="selectCv(file.id)">
@@ -62,6 +62,15 @@
               </li>
             }
           </ul>
+        </div>
+        <div class="col-4 d-flex flex-column align-items-center">
+          <h4>Previous Companies</h4>
+          <div class="col-8 d-flex flex-column justify-content-left ps-5">
+            @for (company of previousCompanies; track $index) {
+              <p class="ms-2">{{ company }}</p>
+            }
+          </div>
+          
         </div>
       </div>
       

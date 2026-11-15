@@ -27,6 +27,7 @@ export class App {
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
+  public previousCompanies: string[] = [];
   public selectedCv: number = -1;
   private isUploadedFileCv = false;
 
@@ -69,15 +70,16 @@ export class App {
   getCoverLetters() {
     this.cvs = [];
     this.files = [];
-    this.http.get< { body: CoverLetter[] }>(this.getCoverLettersUrl)
+    this.http.get< { coverLetters: CoverLetter[], previousCompanies: string[] }>(this.getCoverLettersUrl)
         .subscribe(response => {
-          for (const file of response.body) {
+          for (const file of response.coverLetters) {
             if (file.isCv) {
               this.cvs.push(file);
             } else {
               this.files.push(file);
             }
           }
+          this.previousCompanies = response.previousCompanies;
           this.files.sort((a, b) => a.id - b.id);
           this.cvs.sort((a, b) => a.id - b.id);
           this.cdr.detectChanges();

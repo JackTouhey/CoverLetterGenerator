@@ -10,10 +10,10 @@ const multerUpload = multer({ storage: multer.memoryStorage() });
 
 routes.get('/getCoverLetters', async (req, res) => {
     console.log("getting Cover Letters"); 
+    const companiesAppliedTo: string[] = await getCompaniesAppliedTo();
+    const coverLetters = await getCoverLetters();
 
-    const result = await getCoverLetters();
-
-    res.send( {body: result} );
+    res.send( { coverLetters: coverLetters, previousCompanies: companiesAppliedTo} );
 });
 
 routes.post('/uploadFile', multerUpload.single('file'), async (req, res) => {

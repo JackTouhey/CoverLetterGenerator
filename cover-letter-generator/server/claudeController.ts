@@ -77,8 +77,6 @@ export async function searchForRoles(companiesAppliedTo: string[]): Promise<Role
 }
 
 async function submitSearchForRolesPrompt(messages: Message[]): Promise<Role[]> {
-    
-
     let response = await client.beta.messages.create({
         model: 'claude-haiku-5-5',
         max_tokens: 16000,
