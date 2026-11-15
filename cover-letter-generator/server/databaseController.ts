@@ -60,3 +60,18 @@ export async function insertCompanyAppliedTo(aCompanyName: String) {
         console.error('Error inserting company applied to: ', (error as Error).message);
     } 
 }
+
+export async function deleteCompanyAppliedTo(aCompanyName: string) {
+    const query = {
+        name: 'deleteCompany',
+        text: 'DELETE FROM companies_applied_to WHERE company_name = $1',
+        values: [aCompanyName]
+    };
+
+    try {
+        console.log('Attempting to delete company applied to', aCompanyName);
+        await pool.query(query);
+    } catch (error) {
+        console.error('Error deleting company applied to: ', (error as Error).message);
+    } 
+}

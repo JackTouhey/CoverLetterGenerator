@@ -22,12 +22,13 @@ export class App {
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
   private searchForRoleUrl = "http://localhost:4201/searchForRole";
   private insertCompanyAppliedToUrl = "http://localhost:4201/insertCompanyAppliedTo";
+  private deleteCompanyAppliedToUrl = "http://localhost:4201/deleteCompanyAppliedTo"
 
   // Uploaded file selection fields
   public selectedFiles: number[] = [];
   public files: CoverLetter[] = [];
   public cvs: CoverLetter[] = [];
-  public previousCompanies: string[] = [];
+  public previousCompanies = signal<string[]>([]);
   public selectedCv: number = -1;
   private isUploadedFileCv = false;
 
@@ -79,7 +80,7 @@ export class App {
               this.files.push(file);
             }
           }
-          this.previousCompanies = response.previousCompanies;
+          this.previousCompanies.set(response.previousCompanies);
           this.files.sort((a, b) => a.id - b.id);
           this.cvs.sort((a, b) => a.id - b.id);
           this.cdr.detectChanges();
@@ -129,6 +130,14 @@ export class App {
         console.log(response);
         this.getCoverLetters();
       });
+  }
+
+  deletePriorCompany(companyToDelete: string) {
+    this.http.post<{ body: string }>(this.deleteCompanyAppliedToUrl, { companyName: companyToDelete })
+        .subscribe(response => {
+            console.log(response.body);
+            this.getCoverLetters();
+        });
   }
 
   searchForRole() {
