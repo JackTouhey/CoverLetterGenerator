@@ -208,8 +208,10 @@ export class App {
     for (const coverLetterBlob of this.coverLetterBlobs) {
       this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
       if (this.usingSampleData() === false) {
-        this.http.post(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
+        this.http.post<{ body: string }>(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
           .subscribe(response => {
+            console.log(response.body);
+            this.getCoverLetters();
           });
       }
       

@@ -55,7 +55,7 @@ routes.get('/searchForRole', async (req, res) => {
 routes.post('/insertCompanyAppliedTo', async (req, res) => {
     const companyName = req.body.companyName;
     await insertCompanyAppliedTo(companyName);
-    res.sendStatus(200);
+    res.status(200).json({ body: 'success' });
 });
 
 routes.post('/deleteCompanyAppliedTo', async (req, res) => {
