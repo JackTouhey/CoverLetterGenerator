@@ -67,6 +67,10 @@
           <div class="col-4 d-flex flex-column align-items-center">
             <h4>Previous Companies</h4>
             <div class="col-8 d-flex flex-column justify-content-left ps-5">
+              <form (submit)="insertPriorCompany($event)" class="col-8 d-flex flex-row justify-content-between" >
+                <input name="priorCompanyInput" type="text" class="border border-black-subtle rounded">
+                <button type="submit" class="border border-black rounded px-1">Add</button>
+              </form>
               @for (company of previousCompanies(); track company) {
                 <div class="col-12 d-flex flex-row">
                   <i (click)="deletePriorCompany(company)" class="fa-solid fa-x my-auto"></i>
@@ -78,7 +82,6 @@
           </div>
         </div>
       }
-      
       
       <br/>
 

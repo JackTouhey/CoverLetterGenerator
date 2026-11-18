@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef } from '@angular/core';
@@ -9,7 +10,7 @@ import sampleRoles from '../testing/sampleRoles.json';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -17,6 +18,7 @@ export class App {
   protected readonly title = signal('cover-letter-generator');
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  priorCompanyInput = '';
   private coverLetterUrl = "http://localhost:4201/generateCoverLetter";
   private uploadFileUrl = "http://localhost:4201/uploadFile";
   private getCoverLettersUrl = "http://localhost:4201/getCoverLetters";  
@@ -132,6 +134,14 @@ export class App {
       });
   }
 
+  insertPriorCompany(event: any) {
+    const priorCompany = event.target.priorCompanyInput.value;
+    if (priorCompany !== '') {
+      this.insertCompany(priorCompany);
+      event.target.priorCompanyInput.value = '';
+    }
+  }
+
   deletePriorCompany(companyToDelete: string) {
     this.http.post<{ body: string }>(this.deleteCompanyAppliedToUrl, { companyName: companyToDelete })
         .subscribe(response => {
@@ -208,15 +218,18 @@ export class App {
     for (const coverLetterBlob of this.coverLetterBlobs) {
       this.downloadFile(coverLetterBlob, this.generatedCompanyNames[roleIndex]);
       if (this.usingSampleData() === false) {
-        this.http.post<{ body: string }>(this.insertCompanyAppliedToUrl, { companyName: this.generatedCompanyNames[roleIndex] })
-          .subscribe(response => {
-            console.log(response.body);
-            this.getCoverLetters();
-          });
+        this.insertCompany(this.generatedCompanyNames[roleIndex]);
       }
-      
       roleIndex++;
     }
+  }
+
+  insertCompany(company: string) {
+    this.http.post<{ body: string }>(this.insertCompanyAppliedToUrl, { companyName: company })
+        .subscribe(response => {
+          console.log(response.body);
+          this.getCoverLetters();
+        });
   }
 
   downloadFile(fileBlob: Blob, companyName: string) {
