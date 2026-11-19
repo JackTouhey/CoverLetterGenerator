@@ -11,11 +11,15 @@
         }
         
         <div class="d-flex flex-row col-12 justify-content-evenly">
-          <div class="col-6 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
+          <div class="col-4 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
             <label for="cvSwitch" class="me-2">Is file CV:</label>
             <input id="cvSwitch" type="checkbox" class="form-check-input m-0" role="switch" (change)="toggleIsCv()">
           </div>
-          <div class="col-6 d-flex flex-row justify-content-center mx-auto">
+          <div class="col-4 d-flex flex-row justify-content-center align-items-center mx-auto form-switch p-0">
+            <label for="rememberPassedCompanies" class="me-2">Remember passed companies: </label>
+            <input id="rememberPassedCompanies" type="checkbox" class="form-check-input m-0" role="switch" (change)="toggleRememberPassedCompanies()">
+          </div>
+          <div class="col-4 d-flex flex-row justify-content-center mx-auto">
             <label for="upload" class="me-1">Upload Files: </label>
             <input id="upload" type="file" class="file-upload border border-black rounded" (change)="uploadFile($event)">
           </div>
